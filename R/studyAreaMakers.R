@@ -93,7 +93,12 @@ studyAreaGenerator <- function(url = NULL, # if you have a study area of interes
                                centralPoint = NULL, # Pass the coordinates from Google Maps exactly as you copy it (lat, long) 
                                where = NULL, # default to NULL but also "South" or "North")
                                totalArea = 5000000000,
-                               plotting = TRUE,...) { # dots are more for prepInputs arguments (when you provide a url)
+                               plotting = TRUE,
+                               setSeed = 42,
+                               ...) { # dots are more for prepInputs arguments (when you provide a url)
+  origSeed <- .Random.seed # Making sure I can replicate if any problem arises
+  set.seed(setSeed)
+  on.exit(.Random.seed <- origSeed, add = TRUE) # Making sure to reset seed
   dots <- list(...)
   bounds <- terra::vect(dget(file = "data/boundaries.txt"))
   

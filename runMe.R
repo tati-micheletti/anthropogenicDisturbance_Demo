@@ -70,8 +70,8 @@ out <- SpaDES.project::setupProject(
   functions = "tati-micheletti/anthropogenicDisturbance_Demo@main/R/studyAreaMakers.R",
   authorizeGDrive = googledrive::drive_auth(cache = ".secrets"),
   shortProvinceName = shortProvinceName,
-  studyArea = studyAreaGenerator(centralPoint = c(60.7, -121.5)),
-  rasterToMatch = rtmGenerator(studyArea = studyArea), 
+  studyArea = reproducible::Cache(studyAreaGenerator, centralPoint = c(60.7, -121.5)),
+  rasterToMatch = reproducible::Cache(rtmGenerator, studyArea = studyArea), 
   params = list(getReadySimulationFiles = list(gDriveFolder = "1lqIjwQQ8CU6l5GJezC9tVgs0Uz0dv-FD", 
                                                climateScenario = climateScenario, 
                                                replicateRun = replicateRun,
@@ -111,7 +111,10 @@ out <- SpaDES.project::setupProject(
   #                       saveTime = rep(times$end, times = 2))
 )
 
+origSeed <- .Random.seed # Making sure I can replicate if any problem arises
+set.seed(42)
 example_1a <- do.call(SpaDES.core::simInitAndSpades, out)
+on.exit(.Random.seed <- origSeed, add = TRUE) # Making sure to reset seed
 
 #################################################################################################
 #                                                                                               #
