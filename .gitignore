@@ -34,3 +34,5 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 .secrets
+# Outputs
+outputs/
