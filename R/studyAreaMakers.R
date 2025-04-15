@@ -58,7 +58,7 @@
 #'     Territories (NT1).
 #' }
 #'
-#' The function relies on a pre-defined boundary file for NT1, located at "outterFuns/boundaries.txt".
+#' The function relies on a pre-defined boundary file for NT1, located at "data/boundaries.txt".
 #' It ensures that the generated study area is within these boundaries. If a provided URL or
 #' central point results in a study area outside of NT1, an informative error message will be displayed.
 #'
@@ -95,7 +95,7 @@ studyAreaGenerator <- function(url = NULL, # if you have a study area of interes
                                totalArea = 5000000000,
                                plotting = TRUE,...) { # dots are more for prepInputs arguments (when you provide a url)
   dots <- list(...)
-  bounds <- terra::vect(dget(file = "outterFuns/boundaries.txt"))
+  bounds <- terra::vect(dget(file = "data/boundaries.txt"))
   
   if (is.null(url)){
     # No URL, use defaults, either coord provided by user, or our default regions
@@ -204,7 +204,7 @@ studyAreaGenerator <- function(url = NULL, # if you have a study area of interes
 #' \dontrun{
 #' # Example 1: Generate RTM for a study area (assuming 'study_area' SpatVector exists)
 #' # Create a dummy study area for example purposes (replace with your actual studyArea)
-#' bounds <- terra::vect(dget(file = "outterFuns/boundaries.txt")) # Assuming boundaries.txt exists
+#' bounds <- terra::vect(dget(file = "data/boundaries.txt")) # Assuming boundaries.txt exists
 #' study_area <- SpaDES.tools::randomPolygon(bounds, area = 1000000000)
 #'
 #' rtm <- rtmGenerator(studyArea = study_area)
