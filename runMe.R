@@ -95,6 +95,7 @@ out <- SpaDES.project::setupProject(
                                                    growthStepEnlargingPolys = 0.3)
   ),
   packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'qs', 'usethis',
+               "SpaDES.tools",
                "PredictiveEcology/SpaDES.core@development (>= 2.1.5.9000)",
                "PredictiveEcology/reproducible@development (>= 2.1.1.9002)",
                "PredictiveEcology/Require@development (>= 1.0.1)"),
