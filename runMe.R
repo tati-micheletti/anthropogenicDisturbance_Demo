@@ -16,7 +16,7 @@ getOrUpdatePkg("SpaDES.core", "2.1.5.9000")
 
 if (SpaDES.project::user("tmichele")) setwd("~/projects/anthropogenicDisturbance_Demo/")
 
-terra::terraOptions(tempdir = "~/scratch/terra")
+if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = "~/scratch/terra")
 
 #################################################################################################
 #                                                                                               #
@@ -98,7 +98,7 @@ out <- SpaDES.project::setupProject(
                "PredictiveEcology/SpaDES.core@development (>= 2.1.5.9000)",
                "PredictiveEcology/reproducible@development (>= 2.1.1.9002)",
                "PredictiveEcology/Require@development (>= 1.0.1)"),
-  useGit = "sub",
+  useGit = "both",
   loadOrder = c(
     "getReadySimulationFiles",
     "anthroDisturbance_DataPrep", "potentialResourcesNT_DataPrep", "anthroDisturbance_Generator"

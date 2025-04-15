@@ -1,0 +1,12 @@
+[submodule "modules/getReadySimulationFiles"]
+	path = modules/getReadySimulationFiles
+	url = https://github.com/tati-micheletti/getReadySimulationFiles
+[submodule "modules/anthroDisturbance_DataPrep"]
+	path = modules/anthroDisturbance_DataPrep
+	url = https://github.com/tati-micheletti/anthroDisturbance_DataPrep
+[submodule "modules/potentialResourcesNT_DataPrep"]
+	path = modules/potentialResourcesNT_DataPrep
+	url = https://github.com/tati-micheletti/potentialResourcesNT_DataPrep
+[submodule "modules/anthroDisturbance_Generator"]
+	path = modules/anthroDisturbance_Generator
+	url = https://github.com/tati-micheletti/anthroDisturbance_Generator
