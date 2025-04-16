@@ -16,7 +16,7 @@ getOrUpdatePkg("SpaDES.core", "2.1.5.9000")
 
 if (SpaDES.project::user("tmichele")) setwd("~/projects/anthropogenicDisturbance_Demo/")
 
-if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = "~/scratch/terra")
+if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = paste0("~/scratch/terra_", basename(tempfile())))
 
 #################################################################################################
 #                                                                                               #
@@ -111,10 +111,10 @@ out <- SpaDES.project::setupProject(
   #                       saveTime = rep(times$end, times = 2))
 )
 
-origSeed <- .Random.seed # Making sure I can replicate if any problem arises
-set.seed(42)
+# origSeed <- .Random.seed # Making sure I can replicate if any problem arises
+# set.seed(42)
 example_1a <- do.call(SpaDES.core::simInitAndSpades, out)
-on.exit(.Random.seed <- origSeed, add = TRUE) # Making sure to reset seed
+# on.exit(.Random.seed <- origSeed, add = TRUE) # Making sure to reset seed
 
 #################################################################################################
 #                                                                                               #
