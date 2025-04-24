@@ -15,8 +15,8 @@ getOrUpdatePkg("SpaDES.core", "2.1.5.9000")
 ################### SETUP
 
 if (SpaDES.project::user("tmichele")) setwd("~/projects/anthropogenicDisturbance_Demo/")
-
-if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = paste0("~/scratch/terra_", basename(tempfile())))
+scratchPath <- Require::checkPath("~/scratch", create = TRUE)
+if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
 
 #################################################################################################
 #                                                                                               #
@@ -33,9 +33,6 @@ replicateRun <- "run01" # run02, run03, run04, run05
 # as we download the matching data and pre-simulated fire files from GDrive. 
 # However, the user can provide their own files (i.e., for other locations).
 
-#TODO for fire --> MAKE A UNIT TEST FOR IT. 
-# Google drive on line getSimulationDataFromGDrive.R#21 will fail!
-
 dist <- 0.2 # BAU should be around 0.2
 distMod <- if (is(dist, "numeric")) dist else NULL
 disturbanceScenario <- paste0(dist, "_NT02")
@@ -44,7 +41,7 @@ runName <- paste(shortProvinceName, climateScenario, disturbanceScenario, replic
 out <- SpaDES.project::setupProject(
   runName = runName,
   paths = list(projectPath = "anthropogenicDisturbance_Demo",
-               scratchPath = "~/scratch",
+               scratchPath = scratchPath,
                outputPath = file.path("outputs", runName)),
   modules =c(
     "tati-micheletti/getReadySimulationFiles@main",
@@ -59,7 +56,8 @@ out <- SpaDES.project::setupProject(
                  gargle_oauth_client_type = "web", # Without this, google authentication didn't work when running non-interactively!
                  use_oob = FALSE,
                  repos = "https://cloud.r-project.org",
-                 SpaDES.project.fast = FALSE,
+                 spades.project.fast = FALSE,
+                 spades.scratchPath = scratchPath,
                  reproducible.gdalwarp = TRUE,
                  reproducible.inputPaths = if (user("tmichele")) "~/data" else NULL,
                  reproducible.destinationPath = if (user("tmichele")) "~/data" else NULL,
@@ -103,22 +101,13 @@ out <- SpaDES.project::setupProject(
   loadOrder = c(
     "getReadySimulationFiles",
     "anthroDisturbance_DataPrep", "potentialResourcesNT_DataPrep", "anthroDisturbance_Generator"
-  )#,
-  # outputs =  data.frame(objectName = "disturbances",
-  #                       file = paste0("disturbances_Q_", 
-  #                                     paste(popQuant, collapse = "-"), 
-  #                                     "_year",times$end,".rds"),
-  #                       saveTime = rep(times$end, times = 2))
+  )
 )
 
-# origSeed <- .Random.seed # Making sure I can replicate if any problem arises
-# set.seed(42)
 example_1a <- do.call(SpaDES.core::simInitAndSpades, out)
-# on.exit(.Random.seed <- origSeed, add = TRUE) # Making sure to reset seed
 
 #################################################################################################
 #                                                                                               #
 #  Example #2: Comparing Simulations Across Different Study Areas (North vs. South)             #
 #                                                                                               #
 #################################################################################################
-
