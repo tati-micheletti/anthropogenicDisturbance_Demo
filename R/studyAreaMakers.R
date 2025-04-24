@@ -100,8 +100,15 @@ studyAreaGenerator <- function(url = NULL, # if you have a study area of interes
   set.seed(setSeed)
   on.exit(.Random.seed <- origSeed, add = TRUE) # Making sure to reset seed
   dots <- list(...)
-  bounds <- terra::vect(dget(file = "data/boundaries.txt"))
-  
+  bounds <- tryCatch({
+    terra::vect(dget(file = "data/boundaries.txt"))
+  }, error = function(e){
+    warning(paste0("Repository not copied, trying to access file online.",
+                   "This will only work if there is internet connection..."), 
+            immediate. = TRUE)
+    bounds <- terra::vect(dget(file = "https://raw.githubusercontent.com/tati-micheletti/anthropogenicDisturbance_Demo/refs/heads/main/data/boundaries.txt"))
+    return(bounds)
+  })
   if (is.null(url)){
     # No URL, use defaults, either coord provided by user, or our default regions
       message(paste0("URL for a study area was not provided..."))
