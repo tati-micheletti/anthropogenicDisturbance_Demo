@@ -1,3 +1,4 @@
+# centralPoint = c(60.7, -121.5)
 ################### PACKAGE INSTALLATION
 
 getOrUpdatePkg <- function(p, minVer = "0") {
@@ -9,8 +10,8 @@ getOrUpdatePkg <- function(p, minVer = "0") {
 
 getOrUpdatePkg("Require", "1.0.1")
 getOrUpdatePkg("SpaDES.project", "0.1.1.9036")
-getOrUpdatePkg("reproducible", "2.1.1.9002")
-getOrUpdatePkg("SpaDES.core", "2.1.5.9000")
+getOrUpdatePkg("reproducible", "2.1.2.9041") #"2.1.1.9002"
+getOrUpdatePkg("SpaDES.core", "2.1.5.9022")#"2.1.5.9000"
 
 ################### SETUP
 
@@ -25,18 +26,19 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
 #################################################################################################
 
 ################### Scenario 1a: Simulation with Historical and Pre-Simulated Fire Data (Fire-Sensitive Forestry)
+hashNum <- 1 # VARY THESE NUMBERS FOR DIFFERENT RANDOM STUDY AREAS!
+replicateRun <- "run01" # run01 - run05 # VARY THESE FOR DIFFERENT REPLICATES
+# EXAMPLE OF AREA WITHOUT POTENTIAL: hashNum = 1983
 
 shortProvinceName = "NT"
 climateScenario <- "CanESM5_SSP370"
-replicateRun <- "run01" # run02, run03, run04, run05
 # For climate sensitive fire, the names of replicates need to be as stated above 
 # as we download the matching data and pre-simulated fire files from GDrive. 
 # However, the user can provide their own files (i.e., for other locations).
-
 dist <- 0.2 # BAU should be around 0.2
 distMod <- if (is(dist, "numeric")) dist else NULL
-disturbanceScenario <- paste0(dist, "_NT02")
-runName <- paste(shortProvinceName, climateScenario, disturbanceScenario, replicateRun, sep = "_")
+disturbanceScenario <- paste0(dist, "_NT")
+runName <- paste(shortProvinceName, climateScenario, disturbanceScenario, replicateRun, hashNum, sep = "_")
 
 out <- SpaDES.project::setupProject(
   runName = runName,
@@ -68,7 +70,7 @@ out <- SpaDES.project::setupProject(
   functions = "tati-micheletti/anthropogenicDisturbance_Demo@main/R/studyAreaMakers.R",
   authorizeGDrive = googledrive::drive_auth(cache = ".secrets"),
   shortProvinceName = shortProvinceName,
-  studyArea = reproducible::Cache(studyAreaGenerator, centralPoint = c(60.7, -121.5)),
+  studyArea = reproducible::Cache(studyAreaGenerator, setSeed = hashNum),
   rasterToMatch = reproducible::Cache(rtmGenerator, studyArea = studyArea), 
   params = list(getReadySimulationFiles = list(gDriveFolder = "1lqIjwQQ8CU6l5GJezC9tVgs0Uz0dv-FD", 
                                                climateScenario = climateScenario, 
@@ -90,7 +92,16 @@ out <- SpaDES.project::setupProject(
                                                    saveInitialDisturbances = TRUE,
                                                    seismicLineGrids = 500,
                                                    growthStepEnlargingLines = 20,
-                                                   growthStepEnlargingPolys = 0.3)
+                                                   growthStepEnlargingPolys = 0.3
+                                                   # WHEN DONE FIXING 2010-2015 for edge cases, try 2020!
+                                                   # , diffYears, 
+                                                   # archiveNEW, 
+                                                   # targetFileNEW, 
+                                                   # urlNEW, 
+                                                   # archiveOLD, 
+                                                   # targetFileOLD, 
+                                                   # urlOLD
+                                                   )
   ),
   packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'qs', 'usethis',
                "SpaDES.tools",
@@ -103,6 +114,10 @@ out <- SpaDES.project::setupProject(
     "anthroDisturbance_DataPrep", "potentialResourcesNT_DataPrep", "anthroDisturbance_Generator"
   )
 )
+
+bounds <- terra::vect(dget(file = "https://raw.githubusercontent.com/tati-micheletti/anthropogenicDisturbance_Demo/refs/heads/main/data/boundaries.txt"))
+terra::plot(bounds)
+terra::plot(out$studyArea, add = TRUE, col = "red")
 
 example_1a <- do.call(SpaDES.core::simInitAndSpades, out)
 
