@@ -26,7 +26,8 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
 #################################################################################################
 
 ################### Scenario 1a: Simulation with Historical and Pre-Simulated Fire Data (Fire-Sensitive Forestry)
-hashNum <- 1 # VARY THESE NUMBERS FOR DIFFERENT RANDOM STUDY AREAS!
+
+hashNum <- 51 # VARY THESE NUMBERS FOR DIFFERENT RANDOM STUDY AREAS!
 replicateRun <- "run01" # run01 - run05 # VARY THESE FOR DIFFERENT REPLICATES
 # EXAMPLE OF AREA WITHOUT POTENTIAL: hashNum = 1983
 
@@ -40,7 +41,7 @@ distMod <- if (is(dist, "numeric")) dist else NULL
 disturbanceScenario <- paste0(dist, "_NT")
 runName <- paste(shortProvinceName, climateScenario, disturbanceScenario, replicateRun, hashNum, sep = "_")
 
-out <- SpaDES.project::setupProject(
+out1a <- SpaDES.project::setupProject(
   runName = runName,
   paths = list(projectPath = "anthropogenicDisturbance_Demo",
                scratchPath = scratchPath,
@@ -93,14 +94,6 @@ out <- SpaDES.project::setupProject(
                                                    seismicLineGrids = 500,
                                                    growthStepEnlargingLines = 20,
                                                    growthStepEnlargingPolys = 0.3
-                                                   # WHEN DONE FIXING 2010-2015 for edge cases, try 2020!
-                                                   # , diffYears, 
-                                                   # archiveNEW, 
-                                                   # targetFileNEW, 
-                                                   # urlNEW, 
-                                                   # archiveOLD, 
-                                                   # targetFileOLD, 
-                                                   # urlOLD
                                                    )
   ),
   packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'qs', 'usethis',
@@ -119,10 +112,253 @@ bounds <- terra::vect(dget(file = "https://raw.githubusercontent.com/tati-michel
 terra::plot(bounds)
 terra::plot(out$studyArea, add = TRUE, col = "red")
 
-example_1a <- do.call(SpaDES.core::simInitAndSpades, out)
+example_1a <- do.call(SpaDES.core::simInitAndSpades, out1a)
+
+################### Scenario 1b: Simulation without Historical and Pre-Simulated Fire Data (Non-Fire-Sensitive Forestry)
+
+disturbanceScenario <- paste0(dist, "_NTb")
+runName <- paste(shortProvinceName, climateScenario, disturbanceScenario, replicateRun, hashNum, sep = "_")
+
+out1b <- SpaDES.project::setupProject(
+  runName = runName,
+  paths = list(projectPath = "anthropogenicDisturbance_Demo",
+               scratchPath = scratchPath,
+               outputPath = file.path("outputs", runName)),
+  modules =c(
+    # "tati-micheletti/getReadySimulationFiles@main", # This module provides fire data. We will remove it from this example run
+    "tati-micheletti/anthroDisturbance_DataPrep@main",
+    "tati-micheletti/potentialResourcesNT_DataPrep@main",
+    "tati-micheletti/anthroDisturbance_Generator@main"
+  ),
+  options = list(spades.allowInitDuringSimInit = TRUE,
+                 reproducible.cacheSaveFormat = "rds",
+                 gargle_oauth_email = if (user("tmichele")) "tati.micheletti@gmail.com" else NULL,
+                 gargle_oauth_cache = ".secrets",
+                 gargle_oauth_client_type = "web", # Without this, google authentication didn't work when running non-interactively!
+                 use_oob = FALSE,
+                 repos = "https://cloud.r-project.org",
+                 spades.project.fast = FALSE,
+                 spades.scratchPath = scratchPath,
+                 reproducible.gdalwarp = TRUE,
+                 reproducible.inputPaths = if (user("tmichele")) "~/data" else NULL,
+                 reproducible.destinationPath = if (user("tmichele")) "~/data" else NULL,
+                 reproducible.useMemoise = TRUE
+  ),
+  times = list(start = 2011,
+               end = 2051),
+  functions = "tati-micheletti/anthropogenicDisturbance_Demo@main/R/studyAreaMakers.R",
+  authorizeGDrive = googledrive::drive_auth(cache = ".secrets"),
+  shortProvinceName = shortProvinceName,
+  studyArea = reproducible::Cache(studyAreaGenerator, setSeed = hashNum),
+  rasterToMatch = reproducible::Cache(rtmGenerator, studyArea = studyArea), 
+  params = list(anthroDisturbance_Generator = list(.inputFolderFireLayer = paths[["outputPath"]],
+                                                   .runName = runName,
+                                                   totalDisturbanceRate = distMod,
+                                                   siteSelectionAsDistributing = "seismicLines",
+                                                   probabilityDisturbance = list("seismicLines" = data.table::data.table(structure(list(
+                                                     Potential = c(8, 9, 6, 2, 5, 7, 3, 4),
+                                                     percAreaDisturbed = c(0.340036460849957, 0.0667589126650313,
+                                                                           0.151091052755128, 0.0365264546249524,
+                                                                           0.170480348222102, 0.205459396372943,
+                                                                           0.00681769021602527, 0.0228296842938622)), 
+                                                     row.names = c(NA, -8L), class = "data.frame"))), 
+                                                   runInterval = 10,
+                                                   saveInitialDisturbances = TRUE,
+                                                   seismicLineGrids = 500,
+                                                   growthStepEnlargingLines = 20,
+                                                   growthStepEnlargingPolys = 0.3
+                )
+  ),
+  packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'qs', 'usethis',
+               "SpaDES.tools",
+               "PredictiveEcology/SpaDES.core@development (>= 2.1.5.9000)",
+               "PredictiveEcology/reproducible@development (>= 2.1.1.9002)",
+               "PredictiveEcology/Require@development (>= 1.0.1)"),
+  useGit = "both",
+  loadOrder = c(
+    # "getReadySimulationFiles",
+    "anthroDisturbance_DataPrep", "potentialResourcesNT_DataPrep", "anthroDisturbance_Generator"
+  )
+)
+
+example_1b <- do.call(SpaDES.core::simInitAndSpades, out1b)
 
 #################################################################################################
 #                                                                                               #
 #  Example #2: Comparing Simulations Across Different Study Areas (North vs. South)             #
 #                                                                                               #
 #################################################################################################
+
+################### Scenario 2a: Simulation of Northern Study Area (focus on Seismic Lines)
+
+hashNum <- "North"
+replicateRun <- "run01" # run01 - run05 # VARY THESE FOR DIFFERENT REPLICATES
+shortProvinceName = "NT"
+climateScenario <- "CanESM5_SSP370"
+# For climate sensitive fire, the names of replicates need to be as stated above 
+# as we download the matching data and pre-simulated fire files from GDrive. 
+# However, the user can provide their own files (i.e., for other locations).
+dist <- 0.2 # BAU should be around 0.2
+distMod <- if (is(dist, "numeric")) dist else NULL
+disturbanceScenario <- paste0(dist, "_NT")
+runName <- paste(shortProvinceName, climateScenario, disturbanceScenario, replicateRun, hashNum, sep = "_")
+
+out2a <- SpaDES.project::setupProject(
+  runName = runName,
+  paths = list(projectPath = "anthropogenicDisturbance_Demo",
+               scratchPath = scratchPath,
+               outputPath = file.path("outputs", runName)),
+  modules =c(
+    "tati-micheletti/getReadySimulationFiles@main",
+    "tati-micheletti/anthroDisturbance_DataPrep@main",
+    "tati-micheletti/potentialResourcesNT_DataPrep@main",
+    "tati-micheletti/anthroDisturbance_Generator@main"
+  ),
+  options = list(spades.allowInitDuringSimInit = TRUE,
+                 reproducible.cacheSaveFormat = "rds",
+                 gargle_oauth_email = if (user("tmichele")) "tati.micheletti@gmail.com" else NULL,
+                 gargle_oauth_cache = ".secrets",
+                 gargle_oauth_client_type = "web", # Without this, google authentication didn't work when running non-interactively!
+                 use_oob = FALSE,
+                 repos = "https://cloud.r-project.org",
+                 spades.project.fast = FALSE,
+                 spades.scratchPath = scratchPath,
+                 reproducible.gdalwarp = TRUE,
+                 reproducible.inputPaths = if (user("tmichele")) "~/data" else NULL,
+                 reproducible.destinationPath = if (user("tmichele")) "~/data" else NULL,
+                 reproducible.useMemoise = TRUE
+  ),
+  times = list(start = 2011,
+               end = 2051),
+  functions = "tati-micheletti/anthropogenicDisturbance_Demo@main/R/studyAreaMakers.R",
+  authorizeGDrive = googledrive::drive_auth(cache = ".secrets"),
+  shortProvinceName = shortProvinceName,
+  studyArea = reproducible::Cache(studyAreaGenerator, where = hashNum),
+  rasterToMatch = reproducible::Cache(rtmGenerator, studyArea = studyArea), 
+  params = list(getReadySimulationFiles = list(gDriveFolder = "1lqIjwQQ8CU6l5GJezC9tVgs0Uz0dv-FD", 
+                                               climateScenario = climateScenario, 
+                                               replicateRun = replicateRun,
+                                               lastYearSimulations = times[["end"]],
+                                               runInterval = 10),
+                anthroDisturbance_Generator = list(.inputFolderFireLayer = paths[["outputPath"]],
+                                                   .runName = runName,
+                                                   totalDisturbanceRate = distMod,
+                                                   siteSelectionAsDistributing = "seismicLines",
+                                                   probabilityDisturbance = list("seismicLines" = data.table::data.table(structure(list(
+                                                     Potential = c(8, 9, 6, 2, 5, 7, 3, 4),
+                                                     percAreaDisturbed = c(0.340036460849957, 0.0667589126650313,
+                                                                           0.151091052755128, 0.0365264546249524,
+                                                                           0.170480348222102, 0.205459396372943,
+                                                                           0.00681769021602527, 0.0228296842938622)), 
+                                                     row.names = c(NA, -8L), class = "data.frame"))), 
+                                                   runInterval = 10,
+                                                   saveInitialDisturbances = TRUE,
+                                                   seismicLineGrids = 500,
+                                                   growthStepEnlargingLines = 20,
+                                                   growthStepEnlargingPolys = 0.3
+                )
+  ),
+  packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'qs', 'usethis',
+               "SpaDES.tools",
+               "PredictiveEcology/SpaDES.core@development (>= 2.1.5.9000)",
+               "PredictiveEcology/reproducible@development (>= 2.1.1.9002)",
+               "PredictiveEcology/Require@development (>= 1.0.1)"),
+  useGit = "both",
+  loadOrder = c(
+    "getReadySimulationFiles",
+    "anthroDisturbance_DataPrep", "potentialResourcesNT_DataPrep", "anthroDisturbance_Generator"
+  )
+)
+
+bounds <- terra::vect(dget(file = "https://raw.githubusercontent.com/tati-micheletti/anthropogenicDisturbance_Demo/refs/heads/main/data/boundaries.txt"))
+terra::plot(bounds)
+terra::plot(out$studyArea, add = TRUE, col = "red")
+
+example_2a <- do.call(SpaDES.core::simInitAndSpades, out2a)
+
+################### Scenario 2a: Simulation of Southern Study Area (focus on Seismic Lines)
+
+hashNum <- "South"
+replicateRun <- "run01" # run01 - run05 # VARY THESE FOR DIFFERENT REPLICATES
+shortProvinceName = "NT"
+climateScenario <- "CanESM5_SSP370"
+# For climate sensitive fire, the names of replicates need to be as stated above 
+# as we download the matching data and pre-simulated fire files from GDrive. 
+# However, the user can provide their own files (i.e., for other locations).
+dist <- 0.2 # BAU should be around 0.2
+distMod <- if (is(dist, "numeric")) dist else NULL
+disturbanceScenario <- paste0(dist, "_NT")
+runName <- paste(shortProvinceName, climateScenario, disturbanceScenario, replicateRun, hashNum, sep = "_")
+
+out2b <- SpaDES.project::setupProject(
+  runName = runName,
+  paths = list(projectPath = "anthropogenicDisturbance_Demo",
+               scratchPath = scratchPath,
+               outputPath = file.path("outputs", runName)),
+  modules =c(
+    "tati-micheletti/getReadySimulationFiles@main",
+    "tati-micheletti/anthroDisturbance_DataPrep@main",
+    "tati-micheletti/potentialResourcesNT_DataPrep@main",
+    "tati-micheletti/anthroDisturbance_Generator@main"
+  ),
+  options = list(spades.allowInitDuringSimInit = TRUE,
+                 reproducible.cacheSaveFormat = "rds",
+                 gargle_oauth_email = if (user("tmichele")) "tati.micheletti@gmail.com" else NULL,
+                 gargle_oauth_cache = ".secrets",
+                 gargle_oauth_client_type = "web", # Without this, google authentication didn't work when running non-interactively!
+                 use_oob = FALSE,
+                 repos = "https://cloud.r-project.org",
+                 spades.project.fast = FALSE,
+                 spades.scratchPath = scratchPath,
+                 reproducible.gdalwarp = TRUE,
+                 reproducible.inputPaths = if (user("tmichele")) "~/data" else NULL,
+                 reproducible.destinationPath = if (user("tmichele")) "~/data" else NULL,
+                 reproducible.useMemoise = TRUE
+  ),
+  times = list(start = 2011,
+               end = 2051),
+  functions = "tati-micheletti/anthropogenicDisturbance_Demo@main/R/studyAreaMakers.R",
+  authorizeGDrive = googledrive::drive_auth(cache = ".secrets"),
+  shortProvinceName = shortProvinceName,
+  studyArea = reproducible::Cache(studyAreaGenerator, where = hashNum),
+  rasterToMatch = reproducible::Cache(rtmGenerator, studyArea = studyArea), 
+  params = list(getReadySimulationFiles = list(gDriveFolder = "1lqIjwQQ8CU6l5GJezC9tVgs0Uz0dv-FD", 
+                                               climateScenario = climateScenario, 
+                                               replicateRun = replicateRun,
+                                               lastYearSimulations = times[["end"]],
+                                               runInterval = 10),
+                anthroDisturbance_Generator = list(.inputFolderFireLayer = paths[["outputPath"]],
+                                                   .runName = runName,
+                                                   totalDisturbanceRate = distMod,
+                                                   siteSelectionAsDistributing = "seismicLines",
+                                                   probabilityDisturbance = list("seismicLines" = data.table::data.table(structure(list(
+                                                     Potential = c(8, 9, 6, 2, 5, 7, 3, 4),
+                                                     percAreaDisturbed = c(0.340036460849957, 0.0667589126650313,
+                                                                           0.151091052755128, 0.0365264546249524,
+                                                                           0.170480348222102, 0.205459396372943,
+                                                                           0.00681769021602527, 0.0228296842938622)), 
+                                                     row.names = c(NA, -8L), class = "data.frame"))), 
+                                                   runInterval = 10,
+                                                   saveInitialDisturbances = TRUE,
+                                                   seismicLineGrids = 500,
+                                                   growthStepEnlargingLines = 20,
+                                                   growthStepEnlargingPolys = 0.3
+                )
+  ),
+  packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'qs', 'usethis',
+               "SpaDES.tools",
+               "PredictiveEcology/SpaDES.core@development (>= 2.1.5.9000)",
+               "PredictiveEcology/reproducible@development (>= 2.1.1.9002)",
+               "PredictiveEcology/Require@development (>= 1.0.1)"),
+  useGit = "both",
+  loadOrder = c(
+    "getReadySimulationFiles",
+    "anthroDisturbance_DataPrep", "potentialResourcesNT_DataPrep", "anthroDisturbance_Generator"
+  )
+)
+
+bounds <- terra::vect(dget(file = "https://raw.githubusercontent.com/tati-micheletti/anthropogenicDisturbance_Demo/refs/heads/main/data/boundaries.txt"))
+terra::plot(bounds)
+terra::plot(out$studyArea, add = TRUE, col = "red")
+
+example_2b <- do.call(SpaDES.core::simInitAndSpades, out2b)
