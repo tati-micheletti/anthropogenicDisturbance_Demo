@@ -218,20 +218,8 @@ out2a <- SpaDES.project::setupProject(
                                                runInterval = 10),
                 anthroDisturbance_Generator = list(.inputFolderFireLayer = paths[["outputPath"]],
                                                    .runName = runName,
-                                                   totalDisturbanceRate = distMod,
-                                                   siteSelectionAsDistributing = "seismicLines",
-                                                   probabilityDisturbance = list("seismicLines" = data.table::data.table(structure(list(
-                                                     Potential = c(8, 9, 6, 2, 5, 7, 3, 4),
-                                                     percAreaDisturbed = c(0.340036460849957, 0.0667589126650313,
-                                                                           0.151091052755128, 0.0365264546249524,
-                                                                           0.170480348222102, 0.205459396372943,
-                                                                           0.00681769021602527, 0.0228296842938622)), 
-                                                     row.names = c(NA, -8L), class = "data.frame"))), 
-                                                   runInterval = 10,
-                                                   saveInitialDisturbances = TRUE,
-                                                   seismicLineGrids = 500,
-                                                   growthStepEnlargingLines = 20,
-                                                   growthStepEnlargingPolys = 0.3
+                                                   growthStepGenerating = 0.01,
+                                                   totalDisturbanceRate = distMod
                 )
   ),
   packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'qs', 'usethis',
@@ -248,7 +236,7 @@ out2a <- SpaDES.project::setupProject(
 
 bounds <- terra::vect(dget(file = "https://raw.githubusercontent.com/tati-micheletti/anthropogenicDisturbance_Demo/refs/heads/main/data/boundaries.txt"))
 terra::plot(bounds)
-terra::plot(out$studyArea, add = TRUE, col = "red")
+terra::plot(out2a$studyArea, add = TRUE, col = "red")
 
 example_2a <- do.call(SpaDES.core::simInitAndSpades, out2a)
 
@@ -305,20 +293,8 @@ out2b <- SpaDES.project::setupProject(
                                                runInterval = 10),
                 anthroDisturbance_Generator = list(.inputFolderFireLayer = paths[["outputPath"]],
                                                    .runName = runName,
-                                                   totalDisturbanceRate = distMod,
-                                                   siteSelectionAsDistributing = "seismicLines",
-                                                   probabilityDisturbance = list("seismicLines" = data.table::data.table(structure(list(
-                                                     Potential = c(8, 9, 6, 2, 5, 7, 3, 4),
-                                                     percAreaDisturbed = c(0.340036460849957, 0.0667589126650313,
-                                                                           0.151091052755128, 0.0365264546249524,
-                                                                           0.170480348222102, 0.205459396372943,
-                                                                           0.00681769021602527, 0.0228296842938622)), 
-                                                     row.names = c(NA, -8L), class = "data.frame"))), 
-                                                   runInterval = 10,
-                                                   saveInitialDisturbances = TRUE,
-                                                   seismicLineGrids = 500,
-                                                   growthStepEnlargingLines = 20,
-                                                   growthStepEnlargingPolys = 0.3
+                                                   growthStepGenerating = 0.01,
+                                                   totalDisturbanceRate = distMod
                 )
   ),
   packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'qs', 'usethis',
@@ -335,6 +311,6 @@ out2b <- SpaDES.project::setupProject(
 
 bounds <- terra::vect(dget(file = "https://raw.githubusercontent.com/tati-micheletti/anthropogenicDisturbance_Demo/refs/heads/main/data/boundaries.txt"))
 terra::plot(bounds)
-terra::plot(out$studyArea, add = TRUE, col = "red")
+terra::plot(out2b$studyArea, add = TRUE, col = "red")
 
 example_2b <- do.call(SpaDES.core::simInitAndSpades, out2b)
