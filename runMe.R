@@ -10,8 +10,6 @@ getOrUpdatePkg <- function(p, minVer = "0") {
 
 getOrUpdatePkg("Require", "1.0.1")
 getOrUpdatePkg("SpaDES.project", "0.1.1.9036")
-getOrUpdatePkg("reproducible", "2.1.2.9041") #"2.1.1.9002"
-getOrUpdatePkg("SpaDES.core", "2.1.5.9022")#"2.1.5.9000"
 
 ################### SETUP
 
@@ -25,6 +23,7 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
 #                                                                                               #
 #################################################################################################
 
+#################################################################################################
 ################### Scenario 1a: Simulation with Historical and Pre-Simulated Fire Data (Fire-Sensitive Forestry)
 
 hashNum <- 1
@@ -63,8 +62,8 @@ out1a <- SpaDES.project::setupProject(
                  spades.project.fast = FALSE,
                  spades.scratchPath = scratchPath,
                  reproducible.gdalwarp = TRUE,
-                 reproducible.inputPaths = if (user("tmichele")) "~/data" else NULL,
-                 reproducible.destinationPath = if (user("tmichele")) "~/data" else NULL,
+                 reproducible.inputPaths = if (user("tmichele")) "~/data" else paths[["inputPath"]],
+                 reproducible.destinationPath = if (user("tmichele")) "~/data" else paths[["outputPath"]],
                  reproducible.useMemoise = TRUE
   ),
   times = list(start = 2011,
@@ -73,7 +72,7 @@ out1a <- SpaDES.project::setupProject(
   authorizeGDrive = googledrive::drive_auth(cache = ".secrets"),
   shortProvinceName = shortProvinceName,
   studyArea = reproducible::Cache(studyAreaGenerator, centralPoint = centralPoint, 
-                                  totalArea = 10^10, setSeed = hashNum),
+                                  totalArea = 10^10, typeArea = "circle"),
   rasterToMatch = reproducible::Cache(rtmGenerator, studyArea = studyArea), 
   params = list(getReadySimulationFiles = list(gDriveFolder = "1lqIjwQQ8CU6l5GJezC9tVgs0Uz0dv-FD", 
                                                climateScenario = climateScenario, 
@@ -88,10 +87,10 @@ out1a <- SpaDES.project::setupProject(
   ),
   packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'qs', 'usethis',
                "SpaDES.tools",
-               "PredictiveEcology/SpaDES.core@development (>= 2.1.5.9000)",
-               "PredictiveEcology/reproducible@development (>= 2.1.1.9002)",
+               "PredictiveEcology/SpaDES.core@development (>= 2.1.5.9003)",
+               "PredictiveEcology/reproducible@development (>= 2.1.2)",
                "PredictiveEcology/Require@development (>= 1.0.1)"),
-  useGit = "both",
+    useGit = "both",
   loadOrder = c(
     "getReadySimulationFiles",
     "anthroDisturbance_DataPrep", "potentialResourcesNT_DataPrep", "anthroDisturbance_Generator"
@@ -140,7 +139,7 @@ out1b <- SpaDES.project::setupProject(
   authorizeGDrive = googledrive::drive_auth(cache = ".secrets"),
   shortProvinceName = shortProvinceName,
   studyArea = reproducible::Cache(studyAreaGenerator, centralPoint = centralPoint, 
-                                  totalArea = 10^10, setSeed = hashNum),
+                                  totalArea = 10^10, typeArea = "circle"),
   rasterToMatch = reproducible::Cache(rtmGenerator, studyArea = studyArea), 
   params = list(anthroDisturbance_Generator = list(.inputFolderFireLayer = paths[["outputPath"]],
                                                    .runName = runName,
@@ -150,8 +149,8 @@ out1b <- SpaDES.project::setupProject(
   ),
   packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'qs', 'usethis',
                "SpaDES.tools",
-               "PredictiveEcology/SpaDES.core@development (>= 2.1.5.9000)",
-               "PredictiveEcology/reproducible@development (>= 2.1.1.9002)",
+               "PredictiveEcology/SpaDES.core@development (>= 2.1.5.9003)",
+               "PredictiveEcology/reproducible@development (>= 2.1.2)",
                "PredictiveEcology/Require@development (>= 1.0.1)"),
   useGit = "both",
   loadOrder = c("anthroDisturbance_DataPrep", "potentialResourcesNT_DataPrep", "anthroDisturbance_Generator")
@@ -159,12 +158,47 @@ out1b <- SpaDES.project::setupProject(
 
 example_1b <- do.call(SpaDES.core::simInitAndSpades, out1b)
 
+####################################################################################################
+#                                                                                                  #
+#  Question #1: What is the differences in total forestry footprint between the scenarios?         #
+#                                                                                                  #
+####################################################################################################
+
+hashNum <- 1
+shortProvinceName = "NT"
+climateScenario <- "CanESM5_SSP370"
+disturbanceScenario <- "0.2"
+outputDir <- "outputs"
+runName1 <- c(shortProvinceName, climateScenario, disturbanceScenario, hashNum)
+shortProvinceName2 = "NTb"
+runName2 <- c(shortProvinceName2, climateScenario, disturbanceScenario, hashNum)
+
+# 1. List correct folders in the outputs directory
+allDirs <- list.dirs(outputDir)
+excludeStrings1 <- c("NTb", "South", "North")
+dirs1 <- dirs1 <- allDirs[
+  sapply(allDirs, function(x) {
+    all(sapply(runName1, grepl, x, fixed = TRUE)) &
+      !any(sapply(excludeStrings1, grepl, x, fixed = TRUE))
+  })
+]
+excludeStrings2 <- c("South", "North")
+dirs2 <- allDirs[
+  sapply(allDirs, function(x) {
+    all(sapply(runName2, grepl, x, fixed = TRUE)) &
+      !any(sapply(excludeStrings2, grepl, x, fixed = TRUE))
+  })
+]
+
+analysis1 <- analysisEx1(pathScenario1 = dirs1, pathScenario2 = dirs2)
+
 #################################################################################################
 #                                                                                               #
 #  Example #2: Comparing Simulations Across Different Study Areas (North vs. South)             #
 #                                                                                               #
 #################################################################################################
 
+#################################################################################################
 ################### Scenario 2a: Simulation of Northern Study Area (focus on Seismic Lines)
 
 hashNum <- "North"
@@ -224,8 +258,8 @@ out2a <- SpaDES.project::setupProject(
   ),
   packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'qs', 'usethis',
                "SpaDES.tools",
-               "PredictiveEcology/SpaDES.core@development (>= 2.1.5.9000)",
-               "PredictiveEcology/reproducible@development (>= 2.1.1.9002)",
+               "PredictiveEcology/SpaDES.core@development (>= 2.1.5.9003)",
+               "PredictiveEcology/reproducible@development (>= 2.1.2)",
                "PredictiveEcology/Require@development (>= 1.0.1)"),
   useGit = "both",
   loadOrder = c(
@@ -240,18 +274,13 @@ terra::plot(out2a$studyArea, add = TRUE, col = "red")
 
 example_2a <- do.call(SpaDES.core::simInitAndSpades, out2a)
 
-################### Scenario 2a: Simulation of Southern Study Area (focus on Seismic Lines)
+#################################################################################################
+################### Scenario 2b: Simulation of Southern Study Area (focus on Seismic Lines)
 
 hashNum <- "South"
-replicateRun <- "run01" # run01 - run05 # VARY THESE FOR DIFFERENT REPLICATES
-shortProvinceName = "NT"
-climateScenario <- "CanESM5_SSP370"
 # For climate sensitive fire, the names of replicates need to be as stated above 
 # as we download the matching data and pre-simulated fire files from GDrive. 
 # However, the user can provide their own files (i.e., for other locations).
-dist <- 0.2 # BAU should be around 0.2
-distMod <- if (is(dist, "numeric")) dist else NULL
-disturbanceScenario <- paste0(dist, "_NT")
 runName <- paste(shortProvinceName, climateScenario, disturbanceScenario, replicateRun, hashNum, sep = "_")
 
 out2b <- SpaDES.project::setupProject(
@@ -299,8 +328,8 @@ out2b <- SpaDES.project::setupProject(
   ),
   packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'qs', 'usethis',
                "SpaDES.tools",
-               "PredictiveEcology/SpaDES.core@development (>= 2.1.5.9000)",
-               "PredictiveEcology/reproducible@development (>= 2.1.1.9002)",
+               "PredictiveEcology/SpaDES.core@development (>= 2.1.5.9003)",
+               "PredictiveEcology/reproducible@development (>= 2.1.2)",
                "PredictiveEcology/Require@development (>= 1.0.1)"),
   useGit = "both",
   loadOrder = c(
