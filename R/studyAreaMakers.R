@@ -95,6 +95,7 @@ studyAreaGenerator <- function(url = NULL, # if you have a study area of interes
                                totalArea = 5000000000,
                                plotting = TRUE,
                                setSeed = NULL,
+                               typeArea = "random", # "circle"
                                ...) { # dots are more for prepInputs arguments (when you provide a url)
   if (!is.null(setSeed)){
     origSeed <- .Random.seed # Making sure I can replicate if any problem arises
@@ -138,15 +139,18 @@ studyAreaGenerator <- function(url = NULL, # if you have a study area of interes
       } else {
       # centralPoint is passed.
       centralPoint <-  terra::vect(matrix(rev(centralPoint), ncol = 2), crs = "EPSG:4326")
+      }
+    if (typeArea == "circle"){
+      studyArea <- terra::buffer(centralPoint, width = sqrt((totalArea*1.5)/pi)) # 30 by 30 km 
+    } else {
+      studyArea <- SpaDES.tools::randomPolygon(centralPoint, area = totalArea) # 30 by 30 km 
     }
-    studyArea <- SpaDES.tools::randomPolygon(centralPoint, area = totalArea) # 30 by 30 km
     studyArea2 <- reproducible::projectInputs(x = studyArea, targetCRS = terra::crs(bounds))
     # Make sure studyArea2 is within NT1 bounds
     finalSA <- reproducible::maskInputs(studyArea2, studyArea = bounds)
     } else {
     # url is not NULL
     # Use prepInputs. But then, test if it is inside the boundaries and error if not
-
       studyArea <- reproducible::prepInputs(url = url,
                                           archive = dots$archive,
                                           projectTo  = bounds,
