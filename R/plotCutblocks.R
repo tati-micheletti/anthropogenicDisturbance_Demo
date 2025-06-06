@@ -3,6 +3,7 @@ plotCutblocks <- function(lays){
   Require::Require("ggplot2")
   Require::Require("sf")
   Require::Require("dplyr")
+  Require::Require("viridis")
   
   years <- sort(unique(lays$DisturbanceYear), decreasing = TRUE)
   # Create a list of SpatVectors, one for each year

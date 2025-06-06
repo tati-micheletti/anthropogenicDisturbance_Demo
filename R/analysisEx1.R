@@ -1,4 +1,4 @@
-analysisEx1 <- function(pathScenario1, pathScenario2){
+analysisEx1 <- function(pathScenario1, pathScenario2, rtm){
 
   # 1. Load all results
   lays1 <- mergeLayers(pathScenario1)
@@ -14,8 +14,9 @@ analysisEx1 <- function(pathScenario1, pathScenario2){
 
   browser()
 
-  
   # 2. Heatmap of all cutblocks in the total period
+  p12 <- makeHeatMapCutblocks(lays1, rtm)
+  
   # 3. Difference bar plot with error bars per year
   # 4. T-test of difference in total foresty-related disturbances
   
