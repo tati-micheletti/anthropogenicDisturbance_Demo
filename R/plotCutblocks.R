@@ -115,31 +115,6 @@ plotCutblocks <- function(lays){
   v_diff_buffered <- terra::buffer(v_diff, width = 0.000000001)
   sV <- terra::crop(v_diff_buffered, newExt)
   
-  # sub11 <- sV[sV$DisturbanceYear == 2011, ]
-  # sub21 <- sV[sV$DisturbanceYear == 2021, ]
-  # sub31 <- sV[sV$DisturbanceYear == 2031, ]
-  # sub41 <- sV[sV$DisturbanceYear == 2041, ]
-  # sub51 <- sV[sV$DisturbanceYear == 2051, ]
-  # 
-  # terra::plot(sub11, col = named_colors_for_plot["2011"])
-  # terra::plot(terra::buffer(sub21, 50), col = named_colors_for_plot["2021"], add = TRUE)
-  # terra::plot(terra::buffer(sub31, 50), col = named_colors_for_plot["2031"], add = TRUE)
-  # terra::plot(terra::buffer(sub41, 50), col = named_colors_for_plot["2041"], add = TRUE)
-  # terra::plot(terra::buffer(sub51, 50), col = named_colors_for_plot["2051"], add = TRUE)
-  # 
-  # legend(
-  #   "bottomleft",                     # Or your preferred position ("bottomleft", etc.)
-  #   legend = actual_factor_levels,  # Text for legend items
-  #   fill = named_colors_for_plot,       # Colors for the legend swatches
-  #   title = legend_title,
-  #   cex = 0.8,
-  #   inset = c(0, 0.1),   # Nudge: 0.02 from left edge, 0.05 from bottom edge
-  #   # Adjust these values (e.g., 0.05 for more upward movement)
-  #   bty = "n"                # Explicitly state you want a box (default is "o")
-  # )
-  # 
-  # browser() # WANT A GGPLOT OBJ though. Or maybe play with par?
-  # 
   sV_sf <- st_as_sf(sV)
   
   # Ensure DisturbanceYear is a factor with correct levels for legend order
@@ -177,7 +152,6 @@ plotCutblocks <- function(lays){
     message("Warning: No data to plot after subsetting and buffering.")
   }
   
-  
   # --- 2. Define Colors and Labels (ensure these are available) ---
   # named_colors_for_plot <- c(
   #   "2011" = "#FDE725FF", # Viridis yellow
@@ -195,7 +169,7 @@ plotCutblocks <- function(lays){
   # or let ggplot decide. For exact replication, base R plot limits might be needed.
   # For simplicity, we'll let ggplot auto-determine limits based on plot_data_sf.
   # You can use coord_sf(xlim = ..., ylim = ...) if needed.
-  
+
   gg <- ggplot() +
     geom_sf(
       data = plot_data_sf,
@@ -236,17 +210,12 @@ plotCutblocks <- function(lays){
       # Add some margin at the bottom of the plot if legend feels too cramped
       plot.margin = margin(t = 5, r = 5, b = 10, l = 5, unit = "pt") # t,r,b,l for top,right,bottom,left
     ) +
-    # Optional: guide for more fine-grained control over legend appearance
-    # guides(fill = guide_legend(
-    #          title.position = "top", # Title above items (default for horizontal)
-    #          label.position = "bottom", # Labels below keys (can be "right" for side-by-side)
-    #          nrow = 1 # Ensure a single row for horizontal layout
-    #        )) +
     coord_sf(
       expand = FALSE # Tries to fit data snugly
     )
   
   # Print the plot
-  return(gg)
+  return(list(Figure = gg,
+              cleanedVector = v_diff))
   
 }
