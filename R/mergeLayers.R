@@ -1,9 +1,10 @@
-mergeLayers <- function(paths){
+mergeLayers <- function(paths, type){
   all <- lapply(paths, function(fold){
     RUN <- sub(".*_(run\\d{2})_.*", "\\1", fold)
-    allFls <- list.files(fold, pattern = "cutblocks.*\\.shp$")
+    allFls <- list.files(fold, pattern = paste0(type,".*\\.shp$"), recursive = FALSE)
+    allFls <- grep("disturbance", allFls, value = TRUE)
     all_years <- lapply(allFls, function(runYear){
-      YYYY <- sub(".*cutblocks_([^_]+)_.*", "\\1", runYear)
+      YYYY <- sub(paste0(".*",type,"_([^_]+)_.*"), "\\1", runYear)
       lay <- terra::vect(file.path(fold, runYear))
       lay$DisturbanceYear <- if (YYYY == "IC") 2011 else as.numeric(YYYY)
       lay$Replicate <- RUN

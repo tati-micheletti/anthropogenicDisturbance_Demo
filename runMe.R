@@ -163,6 +163,7 @@ out1b <- SpaDES.project::setupProject(
 
   example_1b <- do.call(SpaDES.core::simInitAndSpades, out1b)
 }
+
 ###########################################################################################################################
 #                                                                                                                         #
 #  Question #1: What are the differences in total forestry footprint between the scenarios with and without fire?         #
@@ -356,3 +357,39 @@ for (i in 1:5){
   example_2b <- do.call(SpaDES.core::simInitAndSpades, out2b)
   
 }
+
+#############################################################################################
+#                                                                                           #
+#  Question #2: What are the differences in seismic line footprint between North and South? #
+#                                                                                           #
+#############################################################################################
+
+shortProvinceName = "North"
+climateScenario <- "CanESM5_SSP370"
+disturbanceScenario <- "0.2"
+outputDir <- "outputs"
+runName1 <- c(shortProvinceName, climateScenario, disturbanceScenario)
+shortProvinceName2 = "South"
+runName2 <- c(shortProvinceName2, climateScenario, disturbanceScenario)
+
+# 1. List correct folders in the outputs directory
+allDirs <- list.dirs(outputDir)
+excludeStrings1 <- "South"
+dirs1 <- allDirs[
+  sapply(allDirs, function(x) {
+    all(sapply(runName1, grepl, x, fixed = TRUE)) &
+      !any(sapply(excludeStrings1, grepl, x, fixed = TRUE))
+  })
+]
+excludeStrings2 <- "North"
+dirs2 <- allDirs[
+  sapply(allDirs, function(x) {
+    all(sapply(runName2, grepl, x, fixed = TRUE)) &
+      !any(sapply(excludeStrings2, grepl, x, fixed = TRUE))
+  })
+]
+
+source("https://raw.githubusercontent.com/tati-micheletti/anthropogenicDisturbance_Demo/refs/heads/main/R/analysisEx2.R")
+
+analysis2 <- analysisEx2(pathScenario1 = dirs1, 
+                         pathScenario2 = dirs2)

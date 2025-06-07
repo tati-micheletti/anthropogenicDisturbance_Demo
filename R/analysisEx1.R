@@ -13,8 +13,8 @@ analysisEx1 <- function(pathScenario1, pathScenario2){
   source("https://raw.githubusercontent.com/tati-micheletti/anthropogenicDisturbance_Demo/refs/heads/main/R/plotCutblocks.R")
   
   # 1. Load all results
-  lays1 <- mergeLayers(pathScenario1)
-  lays2 <- mergeLayers(pathScenario2)
+  lays1 <- mergeLayers(pathScenario1, type = "cutblocks")
+  lays2 <- mergeLayers(pathScenario2, type = "cutblocks")
   
   # Simulating Anthropogenic Disturbances with (lays1) and without (lays2) Pre-Simulated Fire Data
   # 1. Maps of all cutblocks per year for all reps
@@ -209,7 +209,9 @@ analysisEx1 <- function(pathScenario1, pathScenario2){
     plot_layout(heights = c(1, 1, 0.8)) # Adjust these ratios as needed (e.g., 1 for plots, 0.4 for table)
   
   # You can also add an overall title to the entire figure
-  final_figure & plot_annotation(title = "Differences in total forestry footprint between the scenarios with and without fire?") &
+  final_figure & plot_annotation(title = paste0("Differences in total forestry",
+                                                "footprint between the scenarios",
+                                                "with and without fire")) &
     theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 18))
   
   
