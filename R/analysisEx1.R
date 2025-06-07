@@ -166,7 +166,7 @@ analysisEx1 <- function(pathScenario1, pathScenario2){
                                      "Cummulative Burned Area" = "twodash")) +
     
     labs(
-      title = "Total Area Burned by Decade vs. Yearly Burn",
+      title = "Total Area Burned",
       x = "Year",
       y = expression(paste("Total Area Burned (ha)"))
     ) +
@@ -212,14 +212,15 @@ analysisEx1 <- function(pathScenario1, pathScenario2){
   final_figure & plot_annotation(title = paste0("Differences in total forestry",
                                                 "footprint between the scenarios",
                                                 "with and without fire")) &
-    theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 18))
+    theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
+          plot.margin = margin(t = 15, r = 15, b = 15, l = 15, unit = "pt"))
   
   
   # Print the final figure
   print(final_figure)
   
   figPath <- "outputs/Question1.png"
-  ggsave(figPath, final_figure, width = 10, height = 8, units = "in", dpi = 300)
+  ggsave(figPath, final_figure, width = 13, height = 11, units = "in", dpi = 300)
   
   return(list(p = final_figure,
               figurePath = figPath))

@@ -30,8 +30,6 @@ analysisEx2 <- function(pathScenario1, pathScenario2){
   lay1 <- sl1[["cleanedVector"]]
   lay2 <- sl2[["cleanedVector"]]
 
-  browser()
-  
   # 3. Difference bar plot with error bars per year
   lay1$totalPerimeter <- terra::perim(lay1)
   lay2$totalPerimeter <- terra::perim(lay2)
@@ -57,6 +55,11 @@ analysisEx2 <- function(pathScenario1, pathScenario2){
     theme_minimal() +
     theme(legend.position = "bottom")
   
+  custom_colors <- c(
+"Study Area North" = "#FC8D62", # A shade of red-orange (from Set1)
+"Study Area South" = "#66C2A5"  # A shade of teal/green (from Set1)
+)
+  DT[, Year_Factor := factor(Year)]
   p22 <- ggplot(data = DT, aes(x = Scenario, y = Perimeter, color = Scenario)) +
     geom_violin(aes(fill = Scenario), trim = TRUE, alpha = 0.6,
                 position = position_dodge(width = 0.9)) + # Dodges violins for each scenario
@@ -124,20 +127,19 @@ analysisEx2 <- function(pathScenario1, pathScenario2){
   # Use plot_layout to specify relative heights for each row
   # The table usually needs less vertical space than a full plot
   final_figure <- top_row / middle_row / table_with_title +
-    plot_layout(heights = c(1, 1, 0.8)) # Adjust these ratios as needed (e.g., 1 for plots, 0.4 for table)
-  
+    plot_layout(heights = c(1.4, 1, 0.7), # Your height ratios
+                guides = "collect") & # And keep guides="collect" for combined legends) # Adjust these ratios as needed (e.g., 1 for plots, 0.4 for table)
+    theme(legend.position='bottom')
   # You can also add an overall title to the entire figure
   final_figure & plot_annotation(title = paste0("Differences in total seismic",
                                                 "line footprint between areas in",
                                                 "the North and South")) &
-    theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 18))
+    theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
+          plot.margin = margin(t = 15, r = 15, b = 15, l = 15, unit = "pt"))
   
-  
-  # Print the final figure
-  print(final_figure)
-  
+
   figPath <- "outputs/Question2.png"
-  ggsave(figPath, final_figure, width = 10, height = 8, units = "in", dpi = 300)
+  ggsave(figPath, final_figure, width = 13, height = 11, units = "in", dpi = 300)
   
   return(list(p = final_figure,
               figurePath = figPath))
