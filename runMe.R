@@ -1,4 +1,3 @@
-# centralPoint = c(60.7, -121.5)
 ################### PACKAGE INSTALLATION
 
 getOrUpdatePkg <- function(p, minVer = "0") {
@@ -10,10 +9,11 @@ getOrUpdatePkg <- function(p, minVer = "0") {
 
 getOrUpdatePkg("Require", "1.0.1.9020")
 getOrUpdatePkg("SpaDES.project", "0.1.1.9049")
+
 ################### SETUP
 
 if (SpaDES.project::user("tmichele")) setwd("~/projects/anthropogenicDisturbance_Demo/")
-scratchPath <- Require::checkPath("~/scratch", create = TRUE) #
+scratchPath <- Require::checkPath("~/scratch", create = TRUE)
 if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
 
 #################################################################################
@@ -21,8 +21,6 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
 # Example: Comparing Simulations Across Different Study Areas (North vs. South) #
 #                                                                               #
 #################################################################################
-
-###############################################################################
 
 for (i in 1:5){
 
@@ -41,7 +39,7 @@ for (i in 1:5){
   runName <- paste(shortProvinceName, climateScenario, disturbanceScenario, 
                    replicateRun, hashNum, sep = "_")
   
-  out2a <- SpaDES.project::setupProject(
+  out <- SpaDES.project::setupProject(
     runName = runName,
     paths = list(projectPath = "anthropogenicDisturbance_Demo",
                  scratchPath = scratchPath,
@@ -96,11 +94,14 @@ for (i in 1:5){
     )
   )
   
-  bounds <- terra::vect(dget(file = "https://raw.githubusercontent.com/tati-micheletti/anthropogenicDisturbance_Demo/refs/heads/main/data/boundaries.txt"))
+  bounds <- terra::vect(dget(file = paste0("https://raw.githubusercontent.com/",
+                                           "tati-micheletti/",
+                                           "anthropogenicDisturbance_Demo/refs/",
+                                           "heads/main/data/boundaries.txt")))
   terra::plot(bounds)
-  terra::plot(out2a$studyArea, add = TRUE, col = "red")
+  terra::plot(out$studyArea, add = TRUE, col = "red")
   
-  example_2a <- do.call(SpaDES.core::simInitAndSpades, out2a)
+  example <- do.call(SpaDES.core::simInitAndSpades, out)
   
   ##############################################################################
   ################### Scenario 2: Simulation of Southern Study Area 
@@ -112,7 +113,7 @@ for (i in 1:5){
   runName <- paste(shortProvinceName, climateScenario, disturbanceScenario, 
                    replicateRun, hashNum, sep = "_")
   
-  out2b <- SpaDES.project::setupProject(
+  out_b <- SpaDES.project::setupProject(
     runName = runName,
     paths = list(projectPath = "anthropogenicDisturbance_Demo",
                  scratchPath = scratchPath,
@@ -169,9 +170,9 @@ for (i in 1:5){
   
   bounds <- terra::vect(dget(file = "https://raw.githubusercontent.com/tati-micheletti/anthropogenicDisturbance_Demo/refs/heads/main/data/boundaries.txt"))
   terra::plot(bounds)
-  terra::plot(out2b$studyArea, add = TRUE, col = "red")
+  terra::plot(out_b$studyArea, add = TRUE, col = "red")
   
-  example_2b <- do.call(SpaDES.core::simInitAndSpades, out2b)
+  example_b <- do.call(SpaDES.core::simInitAndSpades, out_b)
   
 }
 
@@ -179,14 +180,14 @@ for (i in 1:5){
 #                                                                             #
 # Question: What is the footprint of seismic lines in Northern and Southern   #
 #          parts of the study area (i.e., caribou NT1 herd boundaries)?       #
+#         Are these significantly different?                                  #
 #                                                                             #
 ###############################################################################
 
 shortProvinceName = "North"
 climateScenario <- "CanESM5_SSP370"
 disturbanceScenario <- "0.2"
-# outputDir <- "outputs" #<~~~~~~~~~~~~~~~~~~~~~~~~~~ UNCOMMENT WHEN READY
-outputDir <- "G:/My Drive/Postdoc PFC-UBC/anthropogenicDisturbances CIMP/Results Demo"
+outputDir <- "outputs"
 
 runName1 <- c(shortProvinceName, climateScenario, disturbanceScenario)
 shortProvinceName2 = "South"
@@ -209,18 +210,17 @@ dirs2 <- allDirs[
   })
 ]
 
+# 2. Get study area boundaries to plot
 Require::Require("SpaDES.tools")
 source(paste0("https://raw.githubusercontent.com/tati-micheletti/",
               "anthropogenicDisturbance_Demo/refs/heads/main/R/studyAreaMakers.R"))
-
 shapeNorth <- studyAreaGenerator(where = "North")
 shapeSouth <- studyAreaGenerator(where = "South")
 
-# source(paste0("https://raw.githubusercontent.com/tati-micheletti/",
-#               "anthropogenicDisturbance_Demo/refs/heads/main/R/analysisEx2.R"))
-
+# 3. Run example question (plots)
+source(paste0("https://raw.githubusercontent.com/tati-micheletti/",
+              "anthropogenicDisturbance_Demo/refs/heads/main/R/runExample.R"))
 analysis <- runExample(pathScenario1 = dirs1, 
                          pathScenario2 = dirs2, 
                         shapeNorth = shapeNorth,
                         shapeSouth = shapeSouth)
-
