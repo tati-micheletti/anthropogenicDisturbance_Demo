@@ -52,7 +52,7 @@ for (i in 1:5){
     ),
     options = list(spades.allowInitDuringSimInit = TRUE,
                    reproducible.cacheSaveFormat = "rds",
-                   gargle_oauth_email = if (user("tmichele")) "tati.micheletti@gmail.com" else NULL,
+                   gargle_oauth_email = if (any(user("tmichele"), user("Tati"))) "tati.micheletti@gmail.com" else NULL,
                    gargle_oauth_cache = ".secrets",
                    gargle_oauth_client_type = "installed", # Without this, google authentication didn't work when running non-interactively!
                    use_oob = FALSE,
@@ -60,8 +60,8 @@ for (i in 1:5){
                    spades.project.fast = FALSE,
                    spades.scratchPath = scratchPath,
                    reproducible.gdalwarp = TRUE,
-                   reproducible.inputPaths = if (user("tmichele")) "~/data" else NULL,
-                   reproducible.destinationPath = if (user("tmichele")) "~/data" else NULL,
+                   reproducible.inputPaths = if (user("tmichele")) "~/data" else file.path(getwd(), "inputs/"),
+                   reproducible.destinationPath = if (user("tmichele")) "~/data" else file.path(getwd(), "outputs/"),
                    reproducible.useMemoise = TRUE
     ),
     times = list(start = 2011,
@@ -134,9 +134,8 @@ for (i in 1:5){
                    spades.project.fast = FALSE,
                    spades.scratchPath = scratchPath,
                    reproducible.gdalwarp = TRUE,
-                   reproducible.inputPaths = if (user("tmichele")) "~/data" else NULL,
-                   reproducible.destinationPath = if (user("tmichele")) "~/data" else NULL,
-                   reproducible.useMemoise = TRUE
+                   reproducible.inputPaths = if (user("tmichele")) "~/data" else file.path(getwd(), "inputs/"),
+                   reproducible.destinationPath = if (user("tmichele")) "~/data" else file.path(getwd(), "outputs/"),                   reproducible.useMemoise = TRUE
     ),
     times = list(start = 2011,
                  end = 2051),
