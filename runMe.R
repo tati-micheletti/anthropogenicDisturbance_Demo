@@ -178,9 +178,9 @@ for (i in 1:5){
 
 ###############################################################################
 #                                                                             #
-# Question: What is the footprint of seismic lines in Northern and Southern   #
-#          parts of the study area (i.e., caribou NT1 herd boundaries)?       #
-#         Are these significantly different?                                  #
+# Question: Are there significantly differences in human footprint regarding  #
+#           seismic lines in Northern and Southern sites within the study     #
+#           area (i.e., caribou NT1 herd boundaries)?                         #
 #                                                                             #
 ###############################################################################
 
