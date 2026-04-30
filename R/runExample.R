@@ -9,6 +9,7 @@ runExample <- function(pathScenario1, pathScenario2, shapeNorth, shapeSouth){
     Require::Require("grid")
     Require::Require("gtable")
     Require::Require("tidyterra")
+    Require::Require("rnaturalearth")
     Require::Require("cardiomoon/interpretCI")
     
     source(paste0("https://raw.githubusercontent.com/tati-micheletti/",
@@ -136,8 +137,7 @@ runExample <- function(pathScenario1, pathScenario2, shapeNorth, shapeSouth){
       
       return(density_rast)
     }  
-    # --- Generate Line Density Rasters for North ---
-    
+
     message("Generating line density rasters for North...")
     line_density_rasters_list_north <- list()
     north_years <- unique(lines_north_sv$DisturbanceYear) # Ensure we only loop years present in North
@@ -242,7 +242,6 @@ runExample <- function(pathScenario1, pathScenario2, shapeNorth, shapeSouth){
         coord_sf(expand = FALSE)
     }
     
-    # 4. T-test of difference in total foresty-related disturbances
     DTT <- DT[Year > 2012, c("Scenario", "Year", "Replicate", "Perimeter")]
     wilList <- list()
     for (i in 1:length(unique(DTT$Year))){
@@ -256,14 +255,6 @@ runExample <- function(pathScenario1, pathScenario2, shapeNorth, shapeSouth){
     }
     
     StatList <- do.call(rbind, wilList)
-    # table_grob <- tableGrob(StatList, rows = NULL, theme = ttheme_minimal(
-    #   core = list(bg_params = list(fill = "white", col = NA),
-    #               padding = unit(c(8, 6), "mm")),
-    #   colhead = list(bg_params = list(fill = "grey90", col = "black"),
-    #                  padding = unit(c(8, 6), "mm")),
-    #   rowhead = list(bg_params = list(fill = "grey90", col = "black")),
-    #   base_size = 9
-    # ))
     table_grob <- tableGrob(StatList, rows = NULL, theme = ttheme_minimal(
       core = list(
         bg_params = list(fill = "white", col = NA),
@@ -323,52 +314,7 @@ EEDD
         )
       )
     
-    # First, combine the plots for the top two rows
-    # top_row <- p1 + p2
-    # middle_row <- p21 + p22
-    # 
-    # # Then combine all rows vertically
-    # # Use plot_layout to specify relative heights for each row
-    # # The table usually needs less vertical space than a full plot
-    # final_figure <- top_row / middle_row / table_with_title +
-    #   plot_layout(heights = c(1.4, 1, 0.7), # Your height ratios
-    #               guides = "collect") & # And keep guides="collect" for combined legends) # Adjust these ratios as needed (e.g., 1 for plots, 0.4 for table)
-    #   theme(legend.position='bottom')
-    # top_row <- p1 + p2 + plot_layout(widths = c(1, 1))
-    # ============== PREVIOUSLY
-    # middle_row <- p21 + p22 + plot_layout(widths = c(1.2, 1))
-    # final_figure <- (top_row / middle_row / wrap_elements(full = table_with_title)) +
-    #   plot_layout(heights = c(1.6, 1.4, 0.8),
-    #               guides = "collect") &
-    #   theme(legend.position = 'bottom')
-    # bottom_row <- wrap_elements(full = table_with_title) + p22 +
-    #   plot_layout(widths = c(1, 1.4))
-    # 
-    # # You can also add an overall title to the entire figure
-    # final_figure & plot_annotation(title = paste0("Differences in total seismic ",
-    #                                               "line footprint between areas in ",
-    #                                               "the North and South")) &
-    #   theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 18),
-    #         plot.margin = margin(t = 15, r = 15, b = 15, l = 15, unit = "pt"))
-    # +=================== END PREVIOUSLY
-    # bottom_row <- wrap_elements(full = table_with_title) + p22 +
-    #   plot_layout(widths = c(1, 1.4))
-    # 
-    # final_figure <- (top_row / p21 / bottom_row) +
-    #   plot_layout(heights = c(1.4, 1.1, 1.3),
-    #               guides = "collect") &
-    #   theme(legend.position = "bottom")
-    # 
-    # final_figure <- final_figure +
-    #   plot_annotation(
-    #     title = "Differences in total seismic line footprint between areas in the North and South",
-    #     theme = theme(
-    #       plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
-    #       plot.margin = margin(t = 15, r = 15, b = 15, l = 15, unit = "pt")
-    #     )
-    #   )
-    
-    figPath <- "outputs/Figure2.png"
+     figPath <- "outputs/Figure2.png"
     ggsave(figPath, final_figure, width = 15, height = 17, 
            units = "in", dpi = 300)
     
