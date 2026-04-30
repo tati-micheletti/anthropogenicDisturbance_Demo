@@ -8,14 +8,94 @@ analysisEx1 <- function(pathScenario1, pathScenario2){
   Require::Require("gridExtra")
   Require::Require("grid")
   Require::Require("gtable")
+  Require::Require("terra")
   
   source("https://raw.githubusercontent.com/tati-micheletti/anthropogenicDisturbance_Demo/refs/heads/main/R/mergeLayers.R")
   source("https://raw.githubusercontent.com/tati-micheletti/anthropogenicDisturbance_Demo/refs/heads/main/R/plotCutblocks.R")
   
+    # Here I am merging all cutblocks!! I Shouldn't do that. Each simulation is dependent 
+  # on where fires occurred. I could use that as one subfigure to the figure (i.e., variation 
+  # among both scenarios is terms of total area?), but I need first show one real 
+  # example with the map underlying to show cutblocks where there WAS a fire in the fire insensitive
+  # and one where there was NOT a fire in the fire sensitive. This is what I WANT to show.
+  # Step 1. Choose a run
+  # Step 2. Load the burn raster for all years (make it cumulative up to the years shown)
+  # Step 3. Plot the cutblocks on top of these (on BOTH scenarios so people can see it.)
+  
+  # 1. Load all results
+  print("Merging layers...")
+  cutLays_with_fire <- mergeLayers(dirs1, type = "cutblocks")
+  cutLays_no_fire <- mergeLayers(dirs2, type = "cutblocks")
+  
+  # 2. First, remove 2011 which is the same for both simulations
+  # laysFire <- subset(cutLays_with_fire, DisturbanceYear != 2011, NSE=TRUE)
+  # laysNoFire <- subset(cutLays_no_fire, DisturbanceYear != 2011, NSE=TRUE)
+  # Not straight forward: 2021 CONTAINS 2011 too. I need to erase all previous 
+  # layers from each year
+  source("R/cleanCutblockYears.R")
+  print("Cleaning cutblocks...")
+  laysFire <- cleanCutblockYears(cutLays_with_fire)
+  laysNoFire <- cleanCutblockYears(cutLays_no_fire)
+  
+  print("Loading fire rasters...")
+  fireLays <- lapply(list.files(dirs1, 
+                                pattern = "rstCurrentBurnList_run", 
+                                full.names = TRUE), 
+                     rast)
+  names(fireLays) <- paste0("run0", 1:5)
+
+  allYs <- unique(laysFire$DisturbanceYear)
+  
+  # 3. For each run, extract from fireLays the years which match the disturbance years
+  print("Processing fire...")
+  fireProcss <- lapply(names(fireLays), function(RUN){
+    l <- fireLays[[RUN]]
+    YearAll <- paste0("Year", allYs)
+    sbSt <- l[[names(l) %in% YearAll]]
+    return(sbSt)
+  })
+  names(fireProcss) <- names(fireLays)
+  
+  # 4. For each run, and each year, test if 
+  allRunYear <- rbindlist(lapply(names(fireProcss), function(RUN){
+    allYear <- rbindlist(lapply(allYs, function(YEAR){
+      print(paste0("Processing cutblocks vs fire for Year ", YEAR, " for ", RUN))
+      # 4.1. the cutblocks are identical
+      sblaysFire <- laysFire[laysFire$Replicate == RUN & 
+                               laysFire$DisturbanceYear == YEAR]
+      sblaysNoFire <- laysNoFire[laysNoFire$Replicate == RUN & 
+                               laysNoFire$DisturbanceYear == YEAR]
+      # 4.2. there was fire overlapping the cutblocks for both scenarios 
+      fr <- fireProcss[[RUN]][paste0("Year", YEAR)]
+      ovlpFire <- extract(fr, sblaysFire, cells = TRUE, exact = TRUE)
+      ovlpFire <- na.omit(ovlpFire)
+      ovlpNoFire <- extract(fr, sblaysNoFire, cells = TRUE, exact = TRUE)
+      ovlpNoFire <- na.omit(ovlpNoFire)
+      return(data.table(
+        run = RUN,
+        year = YEAR,
+        completeOverlap = all.equal(sblaysFire, sblaysNoFire),
+        overlapFireScenario = 100*(sum(ovlpFire$fraction)),
+        overlapNoFireScenario = 100*(sum(ovlpNoFire$fraction)),
+        pixOverlapFireScen = sum(ovlpFire[[paste0("Year", YEAR)]]),
+        pixOverlapNoFireScen = sum(ovlpNoFire[[paste0("Year", YEAR)]])
+        ))
+    }))
+  }))
+  
+  print("What now?!?!")
+  browser()
+  
+  
+  
+  ############# ABOVE UNCOMMENT ---> Fix the same layer's problem (i.e., NT == NTb and fire nor being avoided?)!?
+
   # 1. Load all results
   lays1 <- mergeLayers(pathScenario1, type = "cutblocks")
   lays2 <- mergeLayers(pathScenario2, type = "cutblocks")
   
+  
+
   # Simulating Anthropogenic Disturbances with (lays1) and without (lays2) Pre-Simulated Fire Data
   # 1. Maps of all cutblocks per year for all reps
   cut1 <- plotCutblocks(lays1)
@@ -25,8 +105,7 @@ analysisEx1 <- function(pathScenario1, pathScenario2){
   
   p1 <- cut1[["Figure"]]
   p2 <- cut2[["Figure"]]
-  
-  Require::Require("gridExtra")
+
   grid.arrange(p1, p2, ncol = 2)
 
   lay1 <- cut1[["cleanedVector"]]
