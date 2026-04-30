@@ -54,7 +54,7 @@ for (i in 1:5){
                    reproducible.cacheSaveFormat = "rds",
                    gargle_oauth_email = if (user("tmichele")) "tati.micheletti@gmail.com" else NULL,
                    gargle_oauth_cache = ".secrets",
-                   gargle_oauth_client_type = "web", # Without this, google authentication didn't work when running non-interactively!
+                   gargle_oauth_client_type = "installed", # Without this, google authentication didn't work when running non-interactively!
                    use_oob = FALSE,
                    repos = "https://cloud.r-project.org",
                    spades.project.fast = FALSE,
