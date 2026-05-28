@@ -193,9 +193,9 @@ studyAreaGenerator <- function(url = NULL, # if you have a study area of interes
 #'   This can include arguments like `destPath` to specify the download destination for the raster file.
 #'
 #' @details
-#' The function downloads a raster dataset from a Google Drive URL. This raster is intended
+#' The function downloads a raster dataset from Zenodo. This raster is intended
 #' to serve as a template for spatial analyses, ensuring consistency in raster properties
-#' across different operations, particularly within the NT1 region.
+#' across different operations, particularly within the NT1+BCR6 region.
 #'
 #' The `\link[reproducible]{prepInputs}` function is used to manage the download, potential
 #' caching, and processing of the raster data. Key `prepInputs` arguments used are:
@@ -238,7 +238,7 @@ studyAreaGenerator <- function(url = NULL, # if you have a study area of interes
 rtmGenerator <- function(studyArea, plotting = FALSE,...) {
   dots <- list(...)
   # NT1 raster to match
-    url <- "https://drive.google.com/file/d/11yCDc2_Wia2iw_kz0f0jOXrLpL8of2oM"
+    url <- "https://zenodo.org/records/20434240/files/RTM_BCR6_NT1.tif"
     RTM <- reproducible::prepInputs(url = url,
                                     destPath = dots$destPath, 
                                     studyArea = studyArea, 
