@@ -1,14 +1,12 @@
 ################### PACKAGE INSTALLATION
 
-getOrUpdatePkg <- function(p, minVer = "0") {
-  if (!isFALSE(try(packageVersion(p) < minVer, silent = TRUE) )) {
-    repo <- c("predictiveecology.r-universe.dev", getOption("repos"))
-    install.packages(p, repos = repo)
-  }
-}
-
-getOrUpdatePkg("Require", "1.0.1.9020")
-getOrUpdatePkg("SpaDES.project", "0.1.1.9049")
+if (!require("pak")) install.packages("pak")
+pe <- "predictiveecology.r-universe.dev"
+if (!any(grepl(pe, getOption("repos"))))
+  options(repos = c(pe, getOption("repos")))
+pak::pak(c("PredictiveEcology/Require@fix/pak-no-copy-ensure-in-projlint",
+           "PredictiveEcology/SpaDES.project@development"),
+         ask = FALSE)
 
 ################### SETUP
 
@@ -22,10 +20,10 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
 #                                                                               #
 #################################################################################
 
-for (i in 1:5){
+# for (i in 1:5){
 
   ################### Scenario 1: Simulation of Northern Study Area
-  
+  i <- 10
   hashNum <- "North"
   replicateRun <- paste0("run0", i) # run01 - run05 # VARY THESE FOR DIFFERENT REPLICATES
   shortProvinceName = "NT"
@@ -45,37 +43,37 @@ for (i in 1:5){
                  scratchPath = scratchPath,
                  outputPath = file.path("outputs", runName)),
     modules =c(
-      "tati-micheletti/getReadySimulationFiles@main",
+      # "tati-micheletti/getReadySimulationFiles@main",
       "tati-micheletti/anthroDisturbance_DataPrep@main",
       "tati-micheletti/potentialResourcesNT_DataPrep@main",
       "tati-micheletti/anthroDisturbance_Generator@main"
     ),
     options = list(spades.allowInitDuringSimInit = TRUE,
                    reproducible.cacheSaveFormat = "rds",
-                   gargle_oauth_email = if (any(user("tmichele"), user("Tati"))) "tati.micheletti@gmail.com" else NULL,
-                   gargle_oauth_cache = ".secrets",
-                   gargle_oauth_client_type = "installed", # Without this, google authentication didn't work when running non-interactively!
-                   use_oob = FALSE,
+                   # gargle_oauth_email = if (any(user("tmichele"), user("Tati"))) "tati.micheletti@gmail.com" else NULL,
+                   # gargle_oauth_cache = ".secrets",
+                   # gargle_oauth_client_type = "installed", # Without this, google authentication didn't work when running non-interactively!
+                   # use_oob = FALSE,
                    repos = "https://cloud.r-project.org",
                    spades.project.fast = FALSE,
                    spades.scratchPath = scratchPath,
                    reproducible.gdalwarp = TRUE,
-                   reproducible.inputPaths = if (user("tmichele")) "~/data" else file.path(getwd(), "inputs/"),
+                   reproducible.destinationPathShared = if (user("tmichele")) "~/data" else file.path(getwd(), "inputs/"),
                    reproducible.destinationPath = if (user("tmichele")) "~/data" else file.path(getwd(), "outputs/"),
                    reproducible.useMemoise = TRUE
     ),
     times = list(start = 2011,
                  end = 2051),
     functions = "tati-micheletti/anthropogenicDisturbance_Demo@main/R/studyAreaMakers.R",
-    authorizeGDrive = googledrive::drive_auth(cache = ".secrets"),
+    # authorizeGDrive = googledrive::drive_auth(cache = ".secrets"),
     shortProvinceName = shortProvinceName,
     studyArea = reproducible::Cache(studyAreaGenerator, where = hashNum),
     rasterToMatch = reproducible::Cache(rtmGenerator, studyArea = studyArea), 
-    params = list(getReadySimulationFiles = list(gDriveFolder = "1lqIjwQQ8CU6l5GJezC9tVgs0Uz0dv-FD", 
-                                                 climateScenario = climateScenario, 
-                                                 replicateRun = replicateRun,
-                                                 lastYearSimulations = times[["end"]],
-                                                 runInterval = 10),
+    params = list(#getReadySimulationFiles = list(gDriveFolder = "1lqIjwQQ8CU6l5GJezC9tVgs0Uz0dv-FD", 
+                                                 # climateScenario = climateScenario, 
+                                                 # replicateRun = replicateRun,
+                                                 # lastYearSimulations = times[["end"]],
+                                                 # runInterval = 10),
                   anthroDisturbance_Generator = list(.inputFolderFireLayer = paths[["outputPath"]],
                                                      .runName = runName,
                                                      growthStepGenerating = 0.01,
@@ -89,7 +87,7 @@ for (i in 1:5){
                  "PredictiveEcology/Require@development (>= 1.0.1)"),
     useGit = "both",
     loadOrder = c(
-      "getReadySimulationFiles",
+      # "getReadySimulationFiles",
       "anthroDisturbance_DataPrep", "potentialResourcesNT_DataPrep", "anthroDisturbance_Generator"
     )
   )
@@ -134,7 +132,7 @@ for (i in 1:5){
                    spades.project.fast = FALSE,
                    spades.scratchPath = scratchPath,
                    reproducible.gdalwarp = TRUE,
-                   reproducible.inputPaths = if (user("tmichele")) "~/data" else file.path(getwd(), "inputs/"),
+                   reproducible.destinationPathShared = if (user("tmichele")) "~/data" else file.path(getwd(), "inputs/"),
                    reproducible.destinationPath = if (user("tmichele")) "~/data" else file.path(getwd(), "outputs/"),                   reproducible.useMemoise = TRUE
     ),
     times = list(start = 2011,
@@ -173,7 +171,7 @@ for (i in 1:5){
   
   example_b <- do.call(SpaDES.core::simInitAndSpades, out_b)
   
-}
+# }
 
 ###############################################################################
 #                                                                             #
