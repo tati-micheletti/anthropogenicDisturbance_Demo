@@ -1,0 +1,8 @@
+outputs/
+inputs/
+cache/
+maptiles_cache/
+.Rproj.user/
+.Rhistory
+.secrets
+.git/

@@ -20,8 +20,10 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
 #                                                                               #
 #################################################################################
 
-endYear <- 2051      # last simulated year (reduce, e.g., to 2015, for a quick test)
-nReplicates <- 5     # number of stochastic replicates per study area
+# Defaults reproduce the manuscript example. For a quick test, set the environment variables
+# ADS_END_YEAR (e.g., 2015) and ADS_N_REPLICATES (e.g., 1) before running.
+endYear <- as.integer(Sys.getenv("ADS_END_YEAR", "2051"))      # last simulated year
+nReplicates <- as.integer(Sys.getenv("ADS_N_REPLICATES", "5")) # stochastic replicates per study area
 for (i in seq_len(nReplicates)){
 
   ################### Scenario 1: Simulation of Northern Study Area
@@ -68,7 +70,7 @@ for (i in seq_len(nReplicates)){
     functions = "tati-micheletti/anthropogenicDisturbance_Demo@main/R/studyAreaMakers.R",
     # authorizeGDrive = googledrive::drive_auth(cache = ".secrets"),
     shortProvinceName = shortProvinceName,
-    studyArea = reproducible::Cache(studyAreaGenerator, where = hashNum),
+    studyArea = reproducible::Cache(studyAreaGenerator, where = hashNum, setSeed = 2011), # fixed seed: same study-area polygon for everyone
     rasterToMatch = reproducible::Cache(rtmGenerator, studyArea = studyArea), 
     params = list(#getReadySimulationFiles = list(gDriveFolder = "1lqIjwQQ8CU6l5GJezC9tVgs0Uz0dv-FD", 
                                                  # climateScenario = climateScenario, 
@@ -142,7 +144,7 @@ for (i in seq_len(nReplicates)){
     functions = "tati-micheletti/anthropogenicDisturbance_Demo@main/R/studyAreaMakers.R",
     # authorizeGDrive = googledrive::drive_auth(cache = ".secrets"),
     shortProvinceName = shortProvinceName,
-    studyArea = reproducible::Cache(studyAreaGenerator, where = hashNum),
+    studyArea = reproducible::Cache(studyAreaGenerator, where = hashNum, setSeed = 2011), # fixed seed: same study-area polygon for everyone
     rasterToMatch = reproducible::Cache(rtmGenerator, studyArea = studyArea), 
     params = list(#getReadySimulationFiles = list(gDriveFolder = "1lqIjwQQ8CU6l5GJezC9tVgs0Uz0dv-FD", 
                                                  # climateScenario = climateScenario, 
