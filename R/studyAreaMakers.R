@@ -239,6 +239,17 @@ rtmGenerator <- function(studyArea, plotting = FALSE,...) {
   dots <- list(...)
   # NT1 raster to match
     url <- "https://zenodo.org/records/20434240/files/RTM_BCR6_NT1.tif"
+    # Binary-safe download + checksum. On Windows, download.file() without mode = "wb" (as used
+    # internally by reproducible for non-zip files) silently corrupts .tif files ("invalid extent").
+    rtmMD5 <- "debc59dea1ad2b8f738c4d246b9f467f" # md5 published on the Zenodo record
+    rtmDir <- if (!is.null(dots$destPath)) dots$destPath else getOption("reproducible.destinationPath", ".")
+    dir.create(rtmDir, showWarnings = FALSE, recursive = TRUE)
+    rtmFile <- file.path(rtmDir, "RTM_BCR6_NT1.tif")
+    if (!file.exists(rtmFile) || !identical(unname(tools::md5sum(rtmFile)), rtmMD5)) {
+      utils::download.file(url, rtmFile, mode = "wb", quiet = TRUE)
+      if (!identical(unname(tools::md5sum(rtmFile)), rtmMD5))
+        stop("Downloaded RTM_BCR6_NT1.tif failed its md5 check. Please delete ", rtmFile, " and retry.")
+    }
     RTM <- reproducible::prepInputs(url = url,
                                     destPath = dots$destPath, 
                                     studyArea = studyArea, 
