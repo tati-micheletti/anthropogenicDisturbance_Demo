@@ -250,8 +250,8 @@ rtmGenerator <- function(studyArea, plotting = FALSE,...) {
       if (!identical(unname(tools::md5sum(rtmFile)), rtmMD5))
         stop("Downloaded RTM_BCR6_NT1.tif failed its md5 check. Please delete ", rtmFile, " and retry.")
     }
-    RTM <- reproducible::prepInputs(url = url,
-                                    destPath = dots$destPath, 
+    RTM <- reproducible::prepInputs(targetFile = basename(rtmFile), # local, md5-verified file: no re-download
+                                    destinationPath = rtmDir,
                                     studyArea = studyArea, 
                                     useSAcrs = TRUE,
                                     fun = "terra::rast")
