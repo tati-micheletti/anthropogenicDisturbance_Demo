@@ -4,7 +4,7 @@ if (!require("pak")) install.packages("pak")
 pe <- "predictiveecology.r-universe.dev"
 if (!any(grepl(pe, getOption("repos"))))
   options(repos = c(pe, getOption("repos")))
-pak::pak(c("PredictiveEcology/Require@fix/pak-no-copy-ensure-in-projlint",
+pak::pak(c("PredictiveEcology/Require@development", # branch fix/pak-no-copy-ensure-in-projlint no longer exists
            "PredictiveEcology/SpaDES.project@development"),
          ask = FALSE)
 
@@ -20,21 +20,22 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
 #                                                                               #
 #################################################################################
 
-# for (i in 1:5){
+endYear <- 2051      # last simulated year (reduce, e.g., to 2015, for a quick test)
+nReplicates <- 5     # number of stochastic replicates per study area
+for (i in seq_len(nReplicates)){
 
   ################### Scenario 1: Simulation of Northern Study Area
-  i <- 10
   hashNum <- "North"
-  replicateRun <- paste0("run0", i) # run01 - run05 # VARY THESE FOR DIFFERENT REPLICATES
+  replicateRun <- paste0("run0", i) # run01 - run05
   shortProvinceName = "NT"
-  climateScenario <- "CanESM5_SSP370"
-  # For climate sensitive fire, the names of replicates need to be as stated above 
-  # as we download the matching data and pre-simulated fire files from GDrive. 
-  # However, the user can provide their own files (i.e., for other locations).
+  # climateScenario <- "CanESM5_SSP370"
+  # # For climate sensitive fire, the names of replicates need to be as stated above 
+  # # as we download the matching data and pre-simulated fire files from GDrive. 
+  # # However, the user can provide their own files (i.e., for other locations).
   dist <- 0.2 # BAU should be around 0.2
   distMod <- if (is(dist, "numeric")) dist else NULL
-  disturbanceScenario <- paste0(dist, "_NT")
-  runName <- paste(shortProvinceName, climateScenario, disturbanceScenario, 
+  # disturbanceScenario <- paste0(dist, "_NT")
+  runName <- paste(shortProvinceName, dist, 
                    replicateRun, hashNum, sep = "_")
   
   out <- SpaDES.project::setupProject(
@@ -63,7 +64,7 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
                    reproducible.useMemoise = TRUE
     ),
     times = list(start = 2011,
-                 end = 2051),
+                 end = endYear),
     functions = "tati-micheletti/anthropogenicDisturbance_Demo@main/R/studyAreaMakers.R",
     # authorizeGDrive = googledrive::drive_auth(cache = ".secrets"),
     shortProvinceName = shortProvinceName,
@@ -80,7 +81,7 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
                                                      totalDisturbanceRate = distMod
                   )
     ),
-    packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'qs', 'usethis',
+    packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'usethis',
                  "SpaDES.tools",
                  "PredictiveEcology/SpaDES.core@development",
                  "PredictiveEcology/reproducible@development",
@@ -99,6 +100,7 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
   terra::plot(bounds)
   terra::plot(out$studyArea, add = TRUE, col = "red")
   
+  set.seed(i) # replicate-specific seed: makes each replicate exactly reproducible
   example <- do.call(SpaDES.core::simInitAndSpades, out)
   
   ##############################################################################
@@ -108,7 +110,7 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
   # For climate sensitive fire, the names of replicates need to be as stated above 
   # as we download the matching data and pre-simulated fire files from GDrive. 
   # However, the user can provide their own files (i.e., for other locations).
-  runName <- paste(shortProvinceName, climateScenario, disturbanceScenario, 
+  runName <- paste(shortProvinceName, dist, 
                    replicateRun, hashNum, sep = "_")
   
   out_b <- SpaDES.project::setupProject(
@@ -117,17 +119,17 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
                  scratchPath = scratchPath,
                  outputPath = file.path("outputs", runName)),
     modules =c(
-      "tati-micheletti/getReadySimulationFiles@main",
+      # "tati-micheletti/getReadySimulationFiles@main",
       "tati-micheletti/anthroDisturbance_DataPrep@main",
       "tati-micheletti/potentialResourcesNT_DataPrep@main",
       "tati-micheletti/anthroDisturbance_Generator@main"
     ),
     options = list(spades.allowInitDuringSimInit = TRUE,
                    reproducible.cacheSaveFormat = "rds",
-                   gargle_oauth_email = if (user("tmichele")) "tati.micheletti@gmail.com" else NULL,
-                   gargle_oauth_cache = ".secrets",
-                   gargle_oauth_client_type = "web", # Without this, google authentication didn't work when running non-interactively!
-                   use_oob = FALSE,
+                   # gargle_oauth_email = if (user("tmichele")) "tati.micheletti@gmail.com" else NULL,
+                   # gargle_oauth_cache = ".secrets",
+                   # gargle_oauth_client_type = "web", # Without this, google authentication didn't work when running non-interactively!
+                   # use_oob = FALSE,
                    repos = "https://cloud.r-project.org",
                    spades.project.fast = FALSE,
                    spades.scratchPath = scratchPath,
@@ -136,31 +138,31 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
                    reproducible.destinationPath = if (user("tmichele")) "~/data" else file.path(getwd(), "outputs/"),                   reproducible.useMemoise = TRUE
     ),
     times = list(start = 2011,
-                 end = 2051),
+                 end = endYear),
     functions = "tati-micheletti/anthropogenicDisturbance_Demo@main/R/studyAreaMakers.R",
-    authorizeGDrive = googledrive::drive_auth(cache = ".secrets"),
+    # authorizeGDrive = googledrive::drive_auth(cache = ".secrets"),
     shortProvinceName = shortProvinceName,
     studyArea = reproducible::Cache(studyAreaGenerator, where = hashNum),
     rasterToMatch = reproducible::Cache(rtmGenerator, studyArea = studyArea), 
-    params = list(getReadySimulationFiles = list(gDriveFolder = "1lqIjwQQ8CU6l5GJezC9tVgs0Uz0dv-FD", 
-                                                 climateScenario = climateScenario, 
-                                                 replicateRun = replicateRun,
-                                                 lastYearSimulations = times[["end"]],
-                                                 runInterval = 10),
+    params = list(#getReadySimulationFiles = list(gDriveFolder = "1lqIjwQQ8CU6l5GJezC9tVgs0Uz0dv-FD", 
+                                                 # climateScenario = climateScenario, 
+                                                 # replicateRun = replicateRun,
+                                                 # lastYearSimulations = times[["end"]],
+                                                 # runInterval = 10),
                   anthroDisturbance_Generator = list(.inputFolderFireLayer = paths[["outputPath"]],
                                                      .runName = runName,
                                                      growthStepGenerating = 0.01,
                                                      totalDisturbanceRate = distMod
                   )
     ),
-    packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'qs', 'usethis',
+    packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'usethis',
                  "SpaDES.tools",
                  "PredictiveEcology/SpaDES.core@development",
                  "PredictiveEcology/reproducible@development",
                  "PredictiveEcology/Require@development (>= 1.0.1)"),
     useGit = "both",
     loadOrder = c(
-      "getReadySimulationFiles",
+      # "getReadySimulationFiles",
       "anthroDisturbance_DataPrep", "potentialResourcesNT_DataPrep", "anthroDisturbance_Generator"
     )
   )
@@ -169,9 +171,10 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
   terra::plot(bounds)
   terra::plot(out_b$studyArea, add = TRUE, col = "red")
   
+  set.seed(i)
   example_b <- do.call(SpaDES.core::simInitAndSpades, out_b)
   
-# }
+}
 
 ###############################################################################
 #                                                                             #
@@ -180,15 +183,14 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
 #           area (i.e., caribou NT1 herd boundaries)?                         #
 #                                                                             #
 ###############################################################################
-
+ 
 shortProvinceName = "North"
-climateScenario <- "CanESM5_SSP370"
 disturbanceScenario <- "0.2"
 outputDir <- "outputs"
 
-runName1 <- c(shortProvinceName, climateScenario, disturbanceScenario)
+runName1 <- c(shortProvinceName, disturbanceScenario)
 shortProvinceName2 = "South"
-runName2 <- c(shortProvinceName2, climateScenario, disturbanceScenario)
+runName2 <- c(shortProvinceName2, disturbanceScenario)
 
 # 1. List correct folders in the outputs directory
 allDirs <- list.dirs(outputDir)
