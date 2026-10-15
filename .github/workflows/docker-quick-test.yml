@@ -20,8 +20,14 @@ jobs:
       - name: Run the quick example
         run: |
           mkdir -p outputs
-          docker run --rm -e ADS_END_YEAR=2021 -e ADS_N_REPLICATES=2 \
-            -v "$PWD/outputs:/anthropogenicDisturbance_Demo/outputs" anthrodist-demo
+          set +e
+          docker run --rm -e ADS_END_YEAR=2021 -e ADS_N_REPLICATES=2             -v "$PWD/outputs:/anthropogenicDisturbance_Demo/outputs" anthrodist-demo 2>&1 | tee container.log
+          rc=${PIPESTATUS[0]}
+          # surface the container's error lines as annotations (visible on the run summary page)
+          grep -E "^Error|Error in|Execution halted|there is no package|cannot open" container.log | head -8 | while IFS= read -r l; do echo "::error::${l:0:300}"; done
+          echo "::notice::container exit code $rc; last lines: $(tail -n 6 container.log | tr '
+' '|' | cut -c1-400)"
+          exit $rc
       - name: Check that the results exist
         run: |
           ls outputs | head -30
@@ -31,4 +37,6 @@ jobs:
         if: always()
         with:
           name: quick-test-outputs
-          path: outputs/Figure2.png
+          path: |
+            outputs/Figure2.png
+            container.log
