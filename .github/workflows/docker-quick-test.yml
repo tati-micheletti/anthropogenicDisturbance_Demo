@@ -25,8 +25,7 @@ jobs:
           rc=${PIPESTATUS[0]}
           # surface the container's error lines as annotations (visible on the run summary page)
           grep -E "^Error|Error in|Execution halted|there is no package|cannot open" container.log | head -8 | while IFS= read -r l; do echo "::error::${l:0:300}"; done
-          echo "::notice::container exit code $rc; last lines: $(tail -n 6 container.log | tr '
-' '|' | cut -c1-400)"
+          echo "::notice::container exit code $rc; last lines: $(tail -n 6 container.log | paste -sd'|' - | cut -c1-400)"
           exit $rc
       - name: Check that the results exist
         run: |
