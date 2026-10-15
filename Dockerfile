@@ -1,26 +1,26 @@
 # Reproducible environment for the anthropogenic-disturbance demo (Micheletti et al.).
-# NOTE: written from the versions that ran successfully (R 4.6.x, Windows). Build it once
-# and run the quick test below before relying on it.
+# Pins: R 4.6.1 image, and the exact commits of the SpaDES development packages used for the
+# manuscript runs. The GitHub Action 'Docker quick test' builds this file and runs the quick test.
 #
 # Build:      docker build -t anthrodist-demo .
 # Quick test: docker run --rm -e ADS_END_YEAR=2013 -e ADS_N_REPLICATES=1 -v "$PWD/outputs:/project/outputs" anthrodist-demo
 # Full run:   docker run --rm -v "$PWD/outputs:/project/outputs" anthrodist-demo      # many hours
 FROM rocker/geospatial:4.6.1
 
-# CRAN packages come from the date-pinned snapshot configured by the rocker image.
-RUN Rscript -e 'install.packages("pak", repos = "https://cloud.r-project.org")'
+# 1) CRAN dependencies (rocker pins CRAN to a dated snapshot). pak is used only for this step.
+RUN Rscript -e 'install.packages(c("pak", "remotes"), repos = "https://cloud.r-project.org")'  && Rscript -e 'pak::pkg_install(c("Require", "reproducible", "SpaDES.core", "SpaDES.tools", "terra", "sf", "data.table", "raster", "igraph", "googledrive", "RCurl", "XML", "usethis", "fasterize", "truncnorm", "geodata", "roads", "spaths", "stringr", "dplyr", "msm", "doParallel", "foreach", "zip", "digest", "ggplot2", "scales", "patchwork", "gridExtra", "gtable", "tidyterra", "rnaturalearth", "rnaturalearthdata", "httr2"), ask = FALSE)'
 
-# Development-branch packages used by the SpaDES stack, pinned to the commits tested (Oct 2026).
-RUN Rscript -e 'pak::pak(c( \
-      "PredictiveEcology/Require@41bb255c1e4e", \
-      "PredictiveEcology/reproducible@bd027ca715e0", \
-      "PredictiveEcology/SpaDES.core@917207e4ed42", \
-      "PredictiveEcology/SpaDES.project@07ef23185a54"), ask = FALSE)'
+# 2) The SpaDES development packages, at the exact commits used for the manuscript runs (Oct 2026).
+#    remotes (dependencies = FALSE) is used because these packages declare "@development" Remotes
+#    that pak cannot reconcile with a pinned commit.
+RUN Rscript -e 'pins <- c(Require = "e41bb255c1e4e5b7514eca0c125e9c376d794375", reproducible = "5bd027ca715e0663f0829d2c26ba92c1b59f8929", SpaDES.core = "2917207e4ed424249d13aaa92d3f20727b2e347d", SpaDES.project = "407ef23185a5418437fba638cf5b41f86a798379"); for (p in names(pins)) remotes::install_github(paste0("PredictiveEcology/", p), ref = pins[[p]], dependencies = FALSE, upgrade = "never", force = TRUE)'
 
 WORKDIR /project
 COPY . /project
 # Modules are git submodules; make sure they are present in the build context
 # (git clone --recurse-submodules ...) before building.
 
+# runMe.R then skips installing/upgrading the (pinned) SpaDES packages
+ENV ADS_PINNED=1
 ENV R_USER_DATA_DIR=/project/.rdata
 CMD ["Rscript", "runMe.R"]

@@ -1,0 +1,32 @@
+name: Docker quick test
+
+# Builds the Dockerfile and runs a short version of the example (2 replicates, 2011-2021).
+# Run it manually: GitHub > Actions > "Docker quick test" > Run workflow.
+on:
+  workflow_dispatch:
+
+jobs:
+  quick-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build image
+        run: docker build -t anthrodist-demo .
+      - name: Run the quick example
+        run: |
+          mkdir -p outputs
+          docker run --rm -e ADS_END_YEAR=2021 -e ADS_N_REPLICATES=2 \
+            -v "$PWD/outputs:/project/outputs" anthrodist-demo
+      - name: Check that the results exist
+        run: |
+          ls outputs | head -30
+          test -f outputs/Figure2.png
+          ls -d outputs/NT_0.2_run0*_North outputs/NT_0.2_run0*_South
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quick-test-outputs
+          path: outputs/Figure2.png

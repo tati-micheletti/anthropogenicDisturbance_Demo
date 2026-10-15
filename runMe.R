@@ -1,12 +1,22 @@
 ################### PACKAGE INSTALLATION
 
-if (!require("pak")) install.packages("pak")
-pe <- "predictiveecology.r-universe.dev"
-if (!any(grepl(pe, getOption("repos"))))
-  options(repos = c(pe, getOption("repos")))
-pak::pak(c("PredictiveEcology/Require@development", # branch fix/pak-no-copy-ensure-in-projlint no longer exists
-           "PredictiveEcology/SpaDES.project@development"),
-         ask = FALSE)
+# In the Docker image the packages are already installed at pinned versions (ADS_PINNED is set there):
+# in that case nothing is installed or upgraded here.
+pinned <- nzchar(Sys.getenv("ADS_PINNED"))
+if (!pinned) {
+  if (!require("pak")) install.packages("pak")
+  pe <- "predictiveecology.r-universe.dev"
+  if (!any(grepl(pe, getOption("repos"))))
+    options(repos = c(pe, getOption("repos")))
+  pak::pak(c("PredictiveEcology/Require@development", # branch fix/pak-no-copy-ensure-in-projlint no longer exists
+             "PredictiveEcology/SpaDES.project@development"),
+           ask = FALSE)
+}
+# SpaDES packages requested for the simulation (latest development versions, unless pinned)
+spadesPkgs <- if (pinned) c("SpaDES.core", "reproducible", "Require") else
+  c("PredictiveEcology/SpaDES.core@development",
+    "PredictiveEcology/reproducible@development",
+    "PredictiveEcology/Require@development (>= 1.0.1)")
 
 ################### SETUP
 
@@ -84,10 +94,7 @@ for (i in seq_len(nReplicates)){
                   )
     ),
     packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'usethis',
-                 "SpaDES.tools",
-                 "PredictiveEcology/SpaDES.core@development",
-                 "PredictiveEcology/reproducible@development",
-                 "PredictiveEcology/Require@development (>= 1.0.1)"),
+                 "SpaDES.tools", spadesPkgs),
     useGit = "both",
     loadOrder = c(
       # "getReadySimulationFiles",
@@ -158,10 +165,7 @@ for (i in seq_len(nReplicates)){
                   )
     ),
     packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'usethis',
-                 "SpaDES.tools",
-                 "PredictiveEcology/SpaDES.core@development",
-                 "PredictiveEcology/reproducible@development",
-                 "PredictiveEcology/Require@development (>= 1.0.1)"),
+                 "SpaDES.tools", spadesPkgs),
     useGit = "both",
     loadOrder = c(
       # "getReadySimulationFiles",
