@@ -4,7 +4,7 @@ This repository runs all three modules of the anthropogenic disturbance
 simulator (`anthroDisturbance_DataPrep`, `potentialResourcesNT_DataPrep`,
 `anthroDisturbance_Generator`) and reproduces the example of the software note
 (seismic-line footprint in a Northern and a Southern study area of the Northwest
-Territories, 2011-2051, five stochastic replicates per area, no fire).
+Territories, 2011-2051, 20 stochastic replicates per area, no fire).
 
 ## What you need
 
@@ -32,10 +32,11 @@ Territories, 2011-2051, five stochastic replicates per area, no fire).
 ## Full example (as in the manuscript)
 
 Run `source("runMe.R")` without setting the environment variables
-(2011-2051, five replicates for each study area, about 30 minutes once the
-inputs are downloaded). Each replicate uses its own random seed
-(`set.seed(i)`), and the study areas are generated with a fixed seed, so the
-results can be reproduced exactly.
+(2011-2051, 20 replicates for each study area, about 2 hours once the
+inputs are downloaded). Each replicate uses its own random seed (module
+parameter `.baseSeed`, applied at the start of every event), and the study
+areas are generated with a fixed seed, so rerunning a replicate gives exactly
+the same simulated lines.
 
 The simulated disturbance is only generated every `disturbanceInterval`
 (10) years: with `ADS_END_YEAR` below 2021 only the initial state is produced.

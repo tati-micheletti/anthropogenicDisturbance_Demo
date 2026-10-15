@@ -33,12 +33,12 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
 # Defaults reproduce the manuscript example. For a quick test, set the environment variables
 # ADS_END_YEAR (e.g., 2015) and ADS_N_REPLICATES (e.g., 1) before running.
 endYear <- as.integer(Sys.getenv("ADS_END_YEAR", "2051"))      # last simulated year
-nReplicates <- as.integer(Sys.getenv("ADS_N_REPLICATES", "5")) # stochastic replicates per study area
+nReplicates <- as.integer(Sys.getenv("ADS_N_REPLICATES", "20")) # stochastic replicates per study area
 for (i in seq_len(nReplicates)){
 
   ################### Scenario 1: Simulation of Northern Study Area
   hashNum <- "North"
-  replicateRun <- paste0("run0", i) # run01 - run05
+  replicateRun <- sprintf("run%02d", i) # run01 - run20
   shortProvinceName = "NT"
   # climateScenario <- "CanESM5_SSP370"
   # # For climate sensitive fire, the names of replicates need to be as stated above 
