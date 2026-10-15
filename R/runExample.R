@@ -242,16 +242,22 @@ runExample <- function(pathScenario1, pathScenario2, shapeNorth, shapeSouth){
         coord_sf(expand = FALSE)
     }
     
-    DTT <- DT[Year > 2012, c("Scenario", "Year", "Replicate", "Perimeter")]
+    # The replicate (one full simulation run) is the unit of replication: test the
+    # replicate totals (n = number of replicates per area), NOT the individual lines,
+    # which would pool thousands of non-independent features (pseudo-replication).
+    DTT <- unique(DT[Year > 2012, c("Scenario", "Year", "Replicate", "totalPerim")])
     wilList <- list()
     for (i in 1:length(unique(DTT$Year))){
       Y <- unique(DTT$Year)[i]
       dt <- DTT[Year == Y, ]
-      t <- wilcox.test(Perimeter ~ Scenario, data = dt)
-      wilList[[i]] <- data.table::data.table(Comparison = "Total Length by Scenario",
+      t <- wilcox.test(totalPerim ~ Scenario, data = dt)
+      meanBy <- dt[, mean(totalPerim), by = Scenario]
+      wilList[[i]] <- data.table::data.table(Comparison = "Total perimeter per replicate",
                                              Year = Y,
                                              Statistic = t$statistic,
-                                             p.value = round(t$p.value, 4))
+                                             p.value = signif(t$p.value, 2),
+                                             Ratio = round(meanBy[Scenario == "Study Area South", V1] /
+                                                             meanBy[Scenario == "Study Area North", V1], 2))
     }
     
     StatList <- do.call(rbind, wilList)

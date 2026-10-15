@@ -215,8 +215,8 @@ dirs2 <- allDirs[
 Require::Require("SpaDES.tools")
 source(paste0("https://raw.githubusercontent.com/tati-micheletti/",
               "anthropogenicDisturbance_Demo/refs/heads/main/R/studyAreaMakers.R"))
-shapeNorth <- studyAreaGenerator(where = "North")
-shapeSouth <- studyAreaGenerator(where = "South")
+shapeNorth <- studyAreaGenerator(where = "North", setSeed = 2011) # same seed as in the simulations
+shapeSouth <- studyAreaGenerator(where = "South", setSeed = 2011) # same seed as in the simulations
 
 # 3. Run example question (plots)
 source(paste0("https://raw.githubusercontent.com/tati-micheletti/",
