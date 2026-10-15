@@ -7,4 +7,3 @@ maptiles_cache/
 .secrets
 .git/
 .Rprofile
-modules/

@@ -23,7 +23,7 @@ RUN Rscript -e 'for (p in c("Require", "reproducible", "SpaDES.core", "SpaDES.pr
 # The work directory has the same name as the project folder (runMe.R expects it)
 WORKDIR /anthropogenicDisturbance_Demo
 COPY . /anthropogenicDisturbance_Demo
-# The modules/ folder is not copied (.dockerignore): runMe.R fetches the three modules from GitHub.
+# The modules (git submodules, at the tested commits) are part of the image: no GitHub access is needed to run.
 
 # runMe.R then skips installing/upgrading the (pinned) SpaDES packages
 ENV ADS_PINNED=1

@@ -10,14 +10,12 @@ runExample <- function(pathScenario1, pathScenario2, shapeNorth, shapeSouth){
     Require::Require("gtable")
     Require::Require("tidyterra")
     Require::Require("rnaturalearth")
-    Require::Require("cardiomoon/interpretCI")
     
-    source(paste0("https://raw.githubusercontent.com/tati-micheletti/",
-                  "anthropogenicDisturbance_Demo/refs/heads/main/R/",
-                  "mergeLayers.R"))
-    source(paste0("https://raw.githubusercontent.com/tati-micheletti/",
-                  "anthropogenicDisturbance_Demo/refs/heads/main/R/",
-                  "plotSeismicLines.R"))
+    # helper scripts: use the local copies of this repository when present, otherwise fetch from GitHub
+    helperScript <- function(f) if (file.exists(file.path("R", f))) file.path("R", f) else
+      paste0("https://raw.githubusercontent.com/tati-micheletti/anthropogenicDisturbance_Demo/refs/heads/main/R/", f)
+    source(helperScript("mergeLayers.R"))
+    source(helperScript("plotSeismicLines.R"))
 
     # 1. Load all results
     lays1 <- mergeLayers(pathScenario1, type = "seismicLines")

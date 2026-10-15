@@ -109,7 +109,8 @@ studyAreaGenerator <- function(url = NULL, # if you have a study area of interes
     warning(paste0("Repository not copied, trying to access file online.",
                    "This will only work if there is internet connection..."), 
             immediate. = TRUE)
-    bounds <- terra::vect(dget(file = "https://raw.githubusercontent.com/tati-micheletti/anthropogenicDisturbance_Demo/refs/heads/main/data/boundaries.txt"))
+    bounds <- terra::vect(dget(file = if (file.exists("data/boundaries.txt")) "data/boundaries.txt" else
+      "https://raw.githubusercontent.com/tati-micheletti/anthropogenicDisturbance_Demo/refs/heads/main/data/boundaries.txt"))
     return(bounds)
   })
   if (is.null(url)){

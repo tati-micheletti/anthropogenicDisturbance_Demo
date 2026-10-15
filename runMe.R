@@ -34,9 +34,14 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
 
 # Defaults reproduce the manuscript example. For a quick test, set the environment variables
 # ADS_END_YEAR (e.g., 2015) and ADS_N_REPLICATES (e.g., 1) before running.
-# Modules are fetched from GitHub. In a git clone they are managed together with the project ("both");
-# if this folder is not a git repository (ZIP download, Docker image), each module is simply cloned ("sub").
-useGitMode <- if (dir.exists(".git")) "both" else "sub"
+# Use the files of this repository when they are present (a git clone with submodules, or the Docker image):
+# this pins the modules to the tested versions and needs no GitHub access or credentials. If they are not
+# present (e.g., a ZIP download without the submodules), the files are fetched from GitHub instead.
+ghRaw <- "https://raw.githubusercontent.com/tati-micheletti/anthropogenicDisturbance_Demo/refs/heads/main/"
+repoFile <- function(path) if (file.exists(path)) path else paste0(ghRaw, path)
+moduleNames <- c("anthroDisturbance_DataPrep", "potentialResourcesNT_DataPrep", "anthroDisturbance_Generator")
+haveModules <- all(file.exists(file.path("modules", moduleNames, paste0(moduleNames, ".R"))))
+modulesToUse <- if (haveModules) moduleNames else paste0("tati-micheletti/", moduleNames, "@main")
 endYear <- as.integer(Sys.getenv("ADS_END_YEAR", "2051"))      # last simulated year
 nReplicates <- as.integer(Sys.getenv("ADS_N_REPLICATES", "20")) # stochastic replicates per study area
 for (i in seq_len(nReplicates)){
@@ -60,12 +65,7 @@ for (i in seq_len(nReplicates)){
     paths = list(projectPath = "anthropogenicDisturbance_Demo",
                  scratchPath = scratchPath,
                  outputPath = file.path("outputs", runName)),
-    modules =c(
-      # "tati-micheletti/getReadySimulationFiles@main",
-      "tati-micheletti/anthroDisturbance_DataPrep@main",
-      "tati-micheletti/potentialResourcesNT_DataPrep@main",
-      "tati-micheletti/anthroDisturbance_Generator@main"
-    ),
+    modules = modulesToUse,
     options = list(spades.allowInitDuringSimInit = TRUE,
                    reproducible.cacheSaveFormat = "rds",
                    # gargle_oauth_email = if (any(user("tmichele"), user("Tati"))) "tati.micheletti@gmail.com" else NULL,
@@ -82,7 +82,7 @@ for (i in seq_len(nReplicates)){
     ),
     times = list(start = 2011,
                  end = endYear),
-    functions = "tati-micheletti/anthropogenicDisturbance_Demo@main/R/studyAreaMakers.R",
+    functions = repoFile("R/studyAreaMakers.R"),
     # authorizeGDrive = googledrive::drive_auth(cache = ".secrets"),
     shortProvinceName = shortProvinceName,
     studyArea = reproducible::Cache(studyAreaGenerator, where = hashNum, setSeed = 2011), # fixed seed: same study-area polygon for everyone
@@ -101,17 +101,14 @@ for (i in seq_len(nReplicates)){
     ),
     packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'usethis',
                  "SpaDES.tools", spadesPkgs),
-    useGit = useGitMode,
+    useGit = FALSE, # no GitHub access/credentials needed
     loadOrder = c(
       # "getReadySimulationFiles",
       "anthroDisturbance_DataPrep", "potentialResourcesNT_DataPrep", "anthroDisturbance_Generator"
     )
   )
   
-  bounds <- terra::vect(dget(file = paste0("https://raw.githubusercontent.com/",
-                                           "tati-micheletti/",
-                                           "anthropogenicDisturbance_Demo/refs/",
-                                           "heads/main/data/boundaries.txt")))
+  bounds <- terra::vect(dget(file = repoFile("data/boundaries.txt")))
   terra::plot(bounds)
   terra::plot(out$studyArea, add = TRUE, col = "red")
   
@@ -133,12 +130,7 @@ for (i in seq_len(nReplicates)){
     paths = list(projectPath = "anthropogenicDisturbance_Demo",
                  scratchPath = scratchPath,
                  outputPath = file.path("outputs", runName)),
-    modules =c(
-      # "tati-micheletti/getReadySimulationFiles@main",
-      "tati-micheletti/anthroDisturbance_DataPrep@main",
-      "tati-micheletti/potentialResourcesNT_DataPrep@main",
-      "tati-micheletti/anthroDisturbance_Generator@main"
-    ),
+    modules = modulesToUse,
     options = list(spades.allowInitDuringSimInit = TRUE,
                    reproducible.cacheSaveFormat = "rds",
                    # gargle_oauth_email = if (user("tmichele")) "tati.micheletti@gmail.com" else NULL,
@@ -154,7 +146,7 @@ for (i in seq_len(nReplicates)){
     ),
     times = list(start = 2011,
                  end = endYear),
-    functions = "tati-micheletti/anthropogenicDisturbance_Demo@main/R/studyAreaMakers.R",
+    functions = repoFile("R/studyAreaMakers.R"),
     # authorizeGDrive = googledrive::drive_auth(cache = ".secrets"),
     shortProvinceName = shortProvinceName,
     studyArea = reproducible::Cache(studyAreaGenerator, where = hashNum, setSeed = 2011), # fixed seed: same study-area polygon for everyone
@@ -173,14 +165,14 @@ for (i in seq_len(nReplicates)){
     ),
     packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'usethis',
                  "SpaDES.tools", spadesPkgs),
-    useGit = useGitMode,
+    useGit = FALSE, # no GitHub access/credentials needed
     loadOrder = c(
       # "getReadySimulationFiles",
       "anthroDisturbance_DataPrep", "potentialResourcesNT_DataPrep", "anthroDisturbance_Generator"
     )
   )
   
-  bounds <- terra::vect(dget(file = "https://raw.githubusercontent.com/tati-micheletti/anthropogenicDisturbance_Demo/refs/heads/main/data/boundaries.txt"))
+  bounds <- terra::vect(dget(file = repoFile("data/boundaries.txt")))
   terra::plot(bounds)
   terra::plot(out_b$studyArea, add = TRUE, col = "red")
   
@@ -224,14 +216,12 @@ dirs2 <- allDirs[
 
 # 2. Get study area boundaries to plot
 Require::Require("SpaDES.tools")
-source(paste0("https://raw.githubusercontent.com/tati-micheletti/",
-              "anthropogenicDisturbance_Demo/refs/heads/main/R/studyAreaMakers.R"))
+source(repoFile("R/studyAreaMakers.R"))
 shapeNorth <- studyAreaGenerator(where = "North", setSeed = 2011) # same seed as in the simulations
 shapeSouth <- studyAreaGenerator(where = "South", setSeed = 2011) # same seed as in the simulations
 
 # 3. Run example question (plots)
-source(paste0("https://raw.githubusercontent.com/tati-micheletti/",
-              "anthropogenicDisturbance_Demo/refs/heads/main/R/runExample.R"))
+source(repoFile("R/runExample.R"))
 analysis <- runExample(pathScenario1 = dirs1, 
                          pathScenario2 = dirs2, 
                         shapeNorth = shapeNorth,
