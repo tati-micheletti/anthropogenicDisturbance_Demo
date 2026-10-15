@@ -8,7 +8,7 @@
 FROM rocker/geospatial:4.6.1
 
 # 1) CRAN dependencies (rocker pins CRAN to a dated snapshot). pak is used only for this step.
-RUN Rscript -e 'install.packages(c("pak", "remotes"), repos = "https://cloud.r-project.org")'  && Rscript -e 'pak::pkg_install(c("Require", "reproducible", "SpaDES.core", "SpaDES.tools", "terra", "sf", "data.table", "raster", "igraph", "googledrive", "RCurl", "XML", "usethis", "fasterize", "truncnorm", "geodata", "roads", "spaths", "stringr", "dplyr", "msm", "doParallel", "foreach", "zip", "digest", "ggplot2", "scales", "patchwork", "gridExtra", "gtable", "tidyterra", "rnaturalearth", "rnaturalearthdata", "httr2"), ask = FALSE)'
+RUN Rscript -e 'install.packages(c("pak", "remotes"), repos = "https://cloud.r-project.org")'  && Rscript -e 'pak::pkg_install(c("Require", "reproducible", "SpaDES.core", "SpaDES.tools", "terra", "sf", "data.table", "raster", "igraph", "googledrive", "RCurl", "XML", "usethis", "fasterize", "truncnorm", "geodata", "roads", "spaths", "stringr", "dplyr", "msm", "doParallel", "foreach", "zip", "digest", "magick", "filelock", "fs", "rprojroot", "rstudioapi", "ggplot2", "scales", "patchwork", "gridExtra", "gtable", "tidyterra", "rnaturalearth", "rnaturalearthdata", "httr2"), ask = FALSE)'
 
 # 2) The SpaDES development packages, at the exact commits used for the manuscript runs (Oct 2026).
 #    remotes (dependencies = FALSE) is used because these packages declare "@development" Remotes
