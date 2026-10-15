@@ -90,6 +90,7 @@ for (i in seq_len(nReplicates)){
                   anthroDisturbance_Generator = list(.inputFolderFireLayer = paths[["outputPath"]],
                                                      .runName = runName,
                                                      growthStepGenerating = 0.01,
+                                                     .baseSeed = i, # replicate-specific seed, applied at every event
                                                      totalDisturbanceRate = distMod
                   )
     ),
@@ -161,6 +162,7 @@ for (i in seq_len(nReplicates)){
                   anthroDisturbance_Generator = list(.inputFolderFireLayer = paths[["outputPath"]],
                                                      .runName = runName,
                                                      growthStepGenerating = 0.01,
+                                                     .baseSeed = i, # replicate-specific seed, applied at every event
                                                      totalDisturbanceRate = distMod
                   )
     ),
