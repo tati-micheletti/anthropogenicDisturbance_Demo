@@ -34,6 +34,9 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
 
 # Defaults reproduce the manuscript example. For a quick test, set the environment variables
 # ADS_END_YEAR (e.g., 2015) and ADS_N_REPLICATES (e.g., 1) before running.
+# Modules are fetched from GitHub. In a git clone they are managed together with the project ("both");
+# if this folder is not a git repository (ZIP download, Docker image), each module is simply cloned ("sub").
+useGitMode <- if (dir.exists(".git")) "both" else "sub"
 endYear <- as.integer(Sys.getenv("ADS_END_YEAR", "2051"))      # last simulated year
 nReplicates <- as.integer(Sys.getenv("ADS_N_REPLICATES", "20")) # stochastic replicates per study area
 for (i in seq_len(nReplicates)){
@@ -98,7 +101,7 @@ for (i in seq_len(nReplicates)){
     ),
     packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'usethis',
                  "SpaDES.tools", spadesPkgs),
-    useGit = "both",
+    useGit = useGitMode,
     loadOrder = c(
       # "getReadySimulationFiles",
       "anthroDisturbance_DataPrep", "potentialResourcesNT_DataPrep", "anthroDisturbance_Generator"
@@ -170,7 +173,7 @@ for (i in seq_len(nReplicates)){
     ),
     packages = c("googledrive", 'RCurl', 'XML', 'igraph', 'usethis',
                  "SpaDES.tools", spadesPkgs),
-    useGit = "both",
+    useGit = useGitMode,
     loadOrder = c(
       # "getReadySimulationFiles",
       "anthroDisturbance_DataPrep", "potentialResourcesNT_DataPrep", "anthroDisturbance_Generator"
