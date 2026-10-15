@@ -17,6 +17,16 @@ jobs:
           submodules: recursive
       - name: Build image
         run: docker build -t anthrodist-demo .
+      - name: Inspect the image libraries
+        run: |
+          cat > inspect.R <<'RS'
+          message("LIBPATHS: ", paste(.libPaths(), collapse = " ; "))
+          ip <- installed.packages()
+          for (p in c("Require", "reproducible", "SpaDES.core", "SpaDES.project", "SpaDES.tools", "terra", "remotes", "pak"))
+            message("PKG ", p, " ", if (p %in% rownames(ip)) paste(ip[p, "Version"], "in", ip[p, "LibPath"]) else "MISSING")
+          message("R: ", R.version.string)
+          RS
+          docker run --rm -v "$PWD/inspect.R:/tmp/inspect.R" anthrodist-demo Rscript /tmp/inspect.R 2>&1 | while IFS= read -r l; do echo "::notice::${l:0:300}"; done
       - name: Run the quick example
         run: |
           mkdir -p outputs
