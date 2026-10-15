@@ -16,7 +16,12 @@ jobs:
         with:
           submodules: recursive
       - name: Build image
-        run: docker build -t anthrodist-demo .
+        run: |
+          set +e
+          docker build --progress=plain -t anthrodist-demo . 2>&1 | tee build.log
+          rc=${PIPESTATUS[0]}
+          grep -nE "INSTALLED |NOT INSTALLED|ERROR|Error|rror in|SpaDES.project" build.log | head -14 | while IFS= read -r l; do echo "::notice::${l:0:260}"; done
+          exit $rc
       - name: Inspect the image libraries
         run: |
           cat > inspect.R <<'RS'

@@ -13,7 +13,12 @@ RUN Rscript -e 'install.packages(c("pak", "remotes"), repos = "https://cloud.r-p
 # 2) The SpaDES development packages, at the exact commits used for the manuscript runs (Oct 2026).
 #    remotes (dependencies = FALSE) is used because these packages declare "@development" Remotes
 #    that pak cannot reconcile with a pinned commit.
-RUN Rscript -e 'pins <- c(Require = "e41bb255c1e4e5b7514eca0c125e9c376d794375", reproducible = "5bd027ca715e0663f0829d2c26ba92c1b59f8929", SpaDES.core = "2917207e4ed424249d13aaa92d3f20727b2e347d", SpaDES.project = "407ef23185a5418437fba638cf5b41f86a798379"); for (p in names(pins)) remotes::install_github(paste0("PredictiveEcology/", p), ref = pins[[p]], dependencies = FALSE, upgrade = "never", force = TRUE)'
+RUN Rscript -e 'remotes::install_github("PredictiveEcology/Require", ref = "e41bb255c1e4e5b7514eca0c125e9c376d794375", dependencies = FALSE, upgrade = "never", force = TRUE)'
+RUN Rscript -e 'remotes::install_github("PredictiveEcology/reproducible", ref = "5bd027ca715e0663f0829d2c26ba92c1b59f8929", dependencies = FALSE, upgrade = "never", force = TRUE)'
+RUN Rscript -e 'remotes::install_github("PredictiveEcology/SpaDES.core", ref = "2917207e4ed424249d13aaa92d3f20727b2e347d", dependencies = FALSE, upgrade = "never", force = TRUE)'
+RUN Rscript -e 'remotes::install_github("PredictiveEcology/SpaDES.project", ref = "407ef23185a5418437fba638cf5b41f86a798379", dependencies = FALSE, upgrade = "never", force = TRUE)'
+# Fail the build here if any of them is not installed
+RUN Rscript -e 'for (p in c("Require", "reproducible", "SpaDES.core", "SpaDES.project")) { if (!requireNamespace(p, quietly = TRUE)) stop("NOT INSTALLED: ", p); message("INSTALLED ", p, " ", as.character(packageVersion(p))) }'
 
 # The work directory has the same name as the project folder (runMe.R expects it)
 WORKDIR /anthropogenicDisturbance_Demo
