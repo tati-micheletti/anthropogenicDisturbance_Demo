@@ -6,3 +6,4 @@ maptiles_cache/
 .Rhistory
 .secrets
 .git/
+.Rprofile

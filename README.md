@@ -45,7 +45,7 @@ The simulated disturbance is only generated every `disturbanceInterval`
 
 ```
 docker build -t anthrodist-demo .
-docker run --rm -e ADS_END_YEAR=2031 -e ADS_N_REPLICATES=2 -v "$PWD/outputs:/project/outputs" anthrodist-demo
+docker run --rm -e ADS_END_YEAR=2031 -e ADS_N_REPLICATES=2 -v "$PWD/outputs:/anthropogenicDisturbance_Demo/outputs" anthrodist-demo
 ```
 
 ## Notes

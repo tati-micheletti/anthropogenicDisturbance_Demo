@@ -4,6 +4,8 @@ name: Docker quick test
 # Run it manually: GitHub > Actions > "Docker quick test" > Run workflow.
 on:
   workflow_dispatch:
+  push:
+    paths: [Dockerfile, .dockerignore, runMe.R, .github/workflows/docker-quick-test.yml]
 
 jobs:
   quick-test:
@@ -19,7 +21,7 @@ jobs:
         run: |
           mkdir -p outputs
           docker run --rm -e ADS_END_YEAR=2021 -e ADS_N_REPLICATES=2 \
-            -v "$PWD/outputs:/project/outputs" anthrodist-demo
+            -v "$PWD/outputs:/anthropogenicDisturbance_Demo/outputs" anthrodist-demo
       - name: Check that the results exist
         run: |
           ls outputs | head -30

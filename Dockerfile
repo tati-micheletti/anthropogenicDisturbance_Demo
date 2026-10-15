@@ -3,8 +3,8 @@
 # manuscript runs. The GitHub Action 'Docker quick test' builds this file and runs the quick test.
 #
 # Build:      docker build -t anthrodist-demo .
-# Quick test: docker run --rm -e ADS_END_YEAR=2013 -e ADS_N_REPLICATES=1 -v "$PWD/outputs:/project/outputs" anthrodist-demo
-# Full run:   docker run --rm -v "$PWD/outputs:/project/outputs" anthrodist-demo      # many hours
+# Quick test: docker run --rm -e ADS_END_YEAR=2013 -e ADS_N_REPLICATES=1 -v "$PWD/outputs:/anthropogenicDisturbance_Demo/outputs" anthrodist-demo
+# Full run:   docker run --rm -v "$PWD/outputs:/anthropogenicDisturbance_Demo/outputs" anthrodist-demo      # many hours
 FROM rocker/geospatial:4.6.1
 
 # 1) CRAN dependencies (rocker pins CRAN to a dated snapshot). pak is used only for this step.
@@ -15,12 +15,13 @@ RUN Rscript -e 'install.packages(c("pak", "remotes"), repos = "https://cloud.r-p
 #    that pak cannot reconcile with a pinned commit.
 RUN Rscript -e 'pins <- c(Require = "e41bb255c1e4e5b7514eca0c125e9c376d794375", reproducible = "5bd027ca715e0663f0829d2c26ba92c1b59f8929", SpaDES.core = "2917207e4ed424249d13aaa92d3f20727b2e347d", SpaDES.project = "407ef23185a5418437fba638cf5b41f86a798379"); for (p in names(pins)) remotes::install_github(paste0("PredictiveEcology/", p), ref = pins[[p]], dependencies = FALSE, upgrade = "never", force = TRUE)'
 
-WORKDIR /project
-COPY . /project
+# The work directory has the same name as the project folder (runMe.R expects it)
+WORKDIR /anthropogenicDisturbance_Demo
+COPY . /anthropogenicDisturbance_Demo
 # Modules are git submodules; make sure they are present in the build context
 # (git clone --recurse-submodules ...) before building.
 
 # runMe.R then skips installing/upgrading the (pinned) SpaDES packages
 ENV ADS_PINNED=1
-ENV R_USER_DATA_DIR=/project/.rdata
+ENV R_USER_DATA_DIR=/anthropogenicDisturbance_Demo/.rdata
 CMD ["Rscript", "runMe.R"]

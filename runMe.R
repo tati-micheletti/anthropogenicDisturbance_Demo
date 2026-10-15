@@ -3,6 +3,8 @@
 # In the Docker image the packages are already installed at pinned versions (ADS_PINNED is set there):
 # in that case nothing is installed or upgraded here.
 pinned <- nzchar(Sys.getenv("ADS_PINNED"))
+if (pinned) options(SpaDES.project.standAlone = FALSE,      # keep the pinned system library visible
+                    SpaDES.project.updateRprofile = FALSE)  # and do not write a project .Rprofile
 if (!pinned) {
   if (!require("pak")) install.packages("pak")
   pe <- "predictiveecology.r-universe.dev"
