@@ -8,7 +8,9 @@ Territories, 2011-2051, 20 stochastic replicates per area, no fire).
 
 ## What you need
 
-* R (>= 4.4; tested with 4.6.0) and an internet connection. All input data are
+* R (>= 4.4; tested with 4.6.0) and an internet connection. The SpaDES packages are installed
+  at the commits used for the results of the software note (set the environment variable
+  `ADS_LATEST=1` to use the newest development versions instead). All input data are
   downloaded automatically (~1 GB in total, from Zenodo and public Government
   of Canada / NWT servers). No Google account or credentials are needed.
 * About 10 GB of free disk space.
@@ -27,7 +29,9 @@ Territories, 2011-2051, 20 stochastic replicates per area, no fire).
    "Please restart R" or "object '.filebackedPath' is not exported by
    'namespace:reproducible'".** This happens because the SpaDES packages are
    upgraded while R is running. Restart R and run `source("runMe.R")` again.
-5. Results (maps, tables and `outputs/Figure2.png`) are written to `outputs/`.
+5. Results (maps, `outputs/Figure2.png` and the statistics `outputs/Figure2_statistics.csv`)
+   are written to `outputs/`. The folder can have any name and location (for a ZIP download, unzip it
+   first; the `modules` folders must be present, i.e. clone with `--recurse-submodules`).
 
 ## Full example (as in the manuscript)
 
@@ -43,10 +47,16 @@ The simulated disturbance is only generated every `disturbanceInterval`
 
 ## Running in a container
 
+Install Docker (on Windows: Docker Desktop with the WSL 2 backend; use Linux containers, not Windows
+containers). Build once (about 20-30 minutes), then run.
+
 ```
 docker build -t anthrodist-demo .
 docker run --rm -e ADS_END_YEAR=2031 -e ADS_N_REPLICATES=2 -v "$PWD/outputs:/anthropogenicDisturbance_Demo/outputs" anthrodist-demo
 ```
+
+In Windows PowerShell write the volume as `-v "${PWD}\outputs:/anthropogenicDisturbance_Demo/outputs"`.
+Without the two `-e` settings the container runs the full example of the note.
 
 ## Notes
 
