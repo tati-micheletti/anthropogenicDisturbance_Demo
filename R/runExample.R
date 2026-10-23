@@ -1,5 +1,9 @@
 runExample <- function(pathScenario1, pathScenario2, shapeNorth, shapeSouth){
 
+    # Figure 2 is saved 1961 px wide at 300 dpi (two-column width of Ecography); `s` scales text and
+    # line sizes of the original 15 x 17 in layout to that width
+    s <- 0.6
+
     Require::Require("ggplot2")
     Require::Require("scales")
     Require::Require("data.table")
@@ -23,20 +27,20 @@ runExample <- function(pathScenario1, pathScenario2, shapeNorth, shapeSouth){
     
     # Simulating Seismic Lines in the North and South
     # 1. Maps of all cutblocks per year for all reps
-    sl1 <- plotSeismicLines(lays1)
-    sl2 <- plotSeismicLines(lays2)
+    sl1 <- plotSeismicLines(lays1, s = s)
+    sl2 <- plotSeismicLines(lays2, s = s)
     
     p1 <- sl1[["Figure"]]
     p2 <- sl2[["Figure"]]
     
     p1 <- p1 + theme(plot.title = element_blank(),
                      plot.margin = margin(t = 5, r = 10, b = 5, l = 5, unit = "pt"),
-                     axis.text.x = element_text(size = 8)) +
+                     axis.text.x = element_text(size = 9.5 * s)) +
                 scale_x_continuous(labels = function(x) paste0(abs(x), "°W"),
                                    breaks = scales::extended_breaks(n = 4))
     p2 <- p2 + theme(plot.title = element_blank(),
                      plot.margin = margin(t = 5, r = 10, b = 5, l = 5, unit = "pt"),
-                     axis.text.x = element_text(size = 8)) +
+                     axis.text.x = element_text(size = 9.5 * s)) +
                 scale_x_continuous(labels = function(x) paste0(abs(x), "°W"),
                          breaks = scales::extended_breaks(n = 4))
     grid.arrange(p1, p2, ncol = 2)
@@ -68,16 +72,17 @@ runExample <- function(pathScenario1, pathScenario2, shapeNorth, shapeSouth){
       geom_bar(stat = "identity", position = position_dodge(width = 8)) +
       geom_errorbar(aes(ymin = meanPerim_scaled - sdPerim_scaled, 
                         ymax = meanPerim_scaled + sdPerim_scaled), 
-                    width = 4, linewidth = 1, 
+                    width = 4, linewidth = 1 * s, 
                     position = position_dodge(width = 8)) +
       scale_fill_brewer(palette = "Paired") +
+      scale_x_continuous(breaks = sort(unique(DT2P$Year))) + # label the bars with the simulated years
       labs(y = expression("Mean Perimeter (" * 10^5 * " m)"), x = "Year") +
-      theme_minimal(base_size = 14) +
+      theme_minimal(base_size = 14 * s) +
       theme(legend.position = "bottom",
-            axis.title = element_text(size = 14),
-            axis.text  = element_text(size = 13),
-            legend.text = element_text(size = 12),
-            legend.title = element_text(size = 13))
+            axis.title = element_text(size = 14 * s),
+            axis.text  = element_text(size = 13 * s),
+            legend.text = element_text(size = 12 * s),
+            legend.title = element_text(size = 13 * s))
     
     DT[, Year_Factor := factor(Year)]
     
@@ -219,24 +224,26 @@ runExample <- function(pathScenario1, pathScenario2, shapeNorth, shapeSouth){
         geom_sf(data = lakes_in_area, fill = "lightblue", color = "blue", linewidth = 0.1) +
         geom_sf_text(data = lakes_in_area %>% 
                        filter(name != "", st_area(.) > units::set_units(1, km^2)), 
-                     aes(label = name), size = 2.5, color = "darkblue", 
+                     aes(label = name), size = 2.5 * s, color = "darkblue", 
                      check_overlap = TRUE, nudge_x = +0.5, fontface = "italic") +
-        geom_sf(data = study_areas_combined_sf, fill = NA, color = "black", linewidth = 1) + # Outline
+        geom_sf(data = study_areas_combined_sf, fill = NA, color = "black", linewidth = 1 * s) + # Outline
         geom_spatraster(data = dplot_to_plot_aggregated, aes(fill = after_stat(value)), alpha = 0.8) +
         scale_fill_viridis_c(option = "C", name = expression(atop("Total Line Density", (m/km^2))),
                              na.value = NA, direction = 1) +
         labs(x = NULL, y = NULL, title = NULL) +
-        theme_minimal(base_size = 11) +
+        theme_minimal(base_size = 12 * s) +
         theme(
           legend.position = "bottom", legend.direction = "horizontal",
           legend.title = element_text(face = "bold", size = rel(0.9)),
-          legend.text = element_text(size = rel(0.8)), legend.key.width = unit(1.5, "cm"),
+          legend.text = element_text(size = rel(0.8)), legend.key.width = unit(1.5 * s, "cm"),
           panel.grid = element_blank(),
           axis.text = element_text(size = rel(0.8)),
           axis.ticks = element_line(colour = "black"),
           plot.background = element_rect(fill = "white", colour = NA),
           plot.margin = margin(t = 5, r = 5, b = 10, l = 5, unit = "pt")
         ) +
+        scale_x_continuous(labels = function(x) paste0(abs(x), "°W"),
+                           breaks = scales::extended_breaks(n = 4)) +
         coord_sf(expand = FALSE)
     }
     
@@ -250,76 +257,54 @@ runExample <- function(pathScenario1, pathScenario2, shapeNorth, shapeSouth){
       dt <- DTT[Year == Y, ]
       t <- wilcox.test(totalPerim ~ Scenario, data = dt)
       meanBy <- dt[, mean(totalPerim), by = Scenario]
-      wilList[[i]] <- data.table::data.table(Comparison = "Total perimeter per replicate",
-                                             Year = Y,
-                                             Statistic = t$statistic,
-                                             p.value = signif(t$p.value, 2),
+      wilList[[i]] <- data.table::data.table(Year = Y,
+                                             W = t$statistic,
+                                             p = signif(t$p.value, 2),
                                              Ratio = round(meanBy[Scenario == "Study Area South", V1] /
                                                              meanBy[Scenario == "Study Area North", V1], 2))
     }
     
     StatList <- do.call(rbind, wilList)
-    table_grob <- tableGrob(StatList, rows = NULL, theme = ttheme_minimal(
-      core = list(
-        bg_params = list(fill = "white", col = NA),
-        padding = unit(c(12, 8), "mm"),
-        fg_params = list(fontsize = 12)
-      ),
-      colhead = list(
-        bg_params = list(fill = "grey90", col = "black"),
-        padding = unit(c(12, 8), "mm"),
-        fg_params = list(fontsize = 12, fontface = "bold")
-      ),
-      rowhead = list(bg_params = list(fill = "grey90", col = "black")),
-      base_size = 12
-    ))
-    table_title <- textGrob("Statistical Comparison Between North and South", 
-                            gp = gpar(fontsize = 12, fontface = "bold"))
-    table_with_title <- gtable_add_rows(table_grob, heights = unit(1, "cm"), 
-                                        pos = 0)
-    table_with_title <- gtable_add_grob(table_with_title, table_title, t = 1, 
-                                        b = 1, l = 1, r = ncol(table_with_title))
+    StatList <- StatList[order(Year)]
+    # The statistics are reported in the text; they are saved with the figure
+    data.table::fwrite(StatList, "outputs/Figure2_statistics.csv")
     
     #### FINAL PLOT
     
-    # Wrap the gtable so patchwork handles it correctly
-    table_wrapped <- wrap_elements(full = table_with_title)
-    
     # Custom layout: 
     # Row 1: map North | map South
-    # Row 2: bar plot  | density map (spans rows 2-3)
-    # Row 3: table     | density map (continued)
+    # Row 2: bar plot  | density map
     
     design <- "
 AABB
 CCDD
-EEDD
 "
     
-    final_figure <- p1 + p2 + p21 + p22 + table_wrapped +
+    final_figure <- p1 + p2 + p21 + p22 +
       plot_layout(
         design = design,
-        heights = c(1.4, 1.1, 0.9),
+        heights = c(1.2, 1.4),
         guides = "collect"
       ) &
       theme(
         legend.position = "bottom",
-        legend.text = element_text(size = 13),
-        legend.title = element_text(size = 13, face = "bold"),
-        legend.key.size = unit(0.6, "cm")
+        legend.box = "vertical", # stack the three legends: they do not fit side by side at this width
+        legend.text = element_text(size = 11 * s),
+        legend.title = element_text(size = 11 * s, face = "bold"),
+        legend.key.size = unit(0.6 * s, "cm")
       )
     
     final_figure <- final_figure +
       plot_annotation(
-        title = "Seismic line footprint on Northern and Southern Areas in NWT",
+        tag_levels = "a", tag_prefix = "(", tag_suffix = ")", # panel letters (a)-(d), as used in the legend
         theme = theme(
-          plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
-          plot.margin = margin(t = 15, r = 15, b = 15, l = 15, unit = "pt")
+          plot.tag = element_text(face = "bold", size = 14 * s),
+          plot.margin = margin(t = 6, r = 6, b = 6, l = 6, unit = "pt")
         )
       )
     
      figPath <- "outputs/Figure2.png"
-    ggsave(figPath, final_figure, width = 15, height = 17, 
+    ggsave(figPath, final_figure, width = 1961 / 300, height = 7.6, 
            units = "in", dpi = 300)
     
     return(list(p = final_figure,

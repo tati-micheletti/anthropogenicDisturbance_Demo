@@ -1,4 +1,4 @@
-plotSeismicLines <- function(lays){
+plotSeismicLines <- function(lays, s = 1){ # s: scale of text and line sizes (1 = original)
   Require::Require("ggplot2")
   Require::Require("sf")
   Require::Require("dplyr")
@@ -107,12 +107,12 @@ plotSeismicLines <- function(lays){
     geom_sf(data = lakes_in_area, fill = "lightblue", color = "blue", linewidth = 0.1) +
     geom_sf_text(data = lakes_in_area %>% filter(name != "", st_area(.) > units::set_units(1, km^2)), 
                  aes(label = name), 
-                 size = 2.5, color = "darkblue", check_overlap = TRUE, 
+                 size = 2.5 * s, color = "darkblue", check_overlap = TRUE, 
                  nudge_y = -0.01, fontface = "italic") +
     geom_sf(
       data = plot_data_sf,
       aes(color = DisturbanceYear), 
-      linewidth = 1 
+      linewidth = 1 * s 
     ) +
     scale_color_manual(
       name = legend_title,
@@ -125,7 +125,7 @@ plotSeismicLines <- function(lays){
       y = NULL,
       title = map_title 
     ) +
-    theme_minimal(base_size = 11) +
+    theme_minimal(base_size = 12 * s) +
     theme(
       legend.position = "bottom",
       legend.direction = "horizontal",
