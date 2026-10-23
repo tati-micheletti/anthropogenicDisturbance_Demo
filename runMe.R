@@ -5,20 +5,29 @@
 pinned <- nzchar(Sys.getenv("ADS_PINNED"))
 if (pinned) options(SpaDES.project.standAlone = FALSE,      # keep the pinned system library visible
                     SpaDES.project.updateRprofile = FALSE)  # and do not write a project .Rprofile
+# Outside Docker the SpaDES development packages are installed at the commits used for the results
+# reported in the software note. Set ADS_LATEST=1 to use the newest development versions instead.
+latest <- nzchar(Sys.getenv("ADS_LATEST"))
+shaRequire        <- "e41bb255c1e4e5b7514eca0c125e9c376d794375"
+shaReproducible   <- "8d52c58249b3d2f348ef1cdd121d808e50f3db59"
+shaSpaDESCore     <- "abcea6ff234e75a05ec6228a697d9e357da2449c"
+shaSpaDESProject  <- "4524fb9b9cb2a35795700025dd695a44b8bcc917"
 if (!pinned) {
   if (!require("pak")) install.packages("pak")
   pe <- "predictiveecology.r-universe.dev"
   if (!any(grepl(pe, getOption("repos"))))
     options(repos = c(pe, getOption("repos")))
-  pak::pak(c("PredictiveEcology/Require@development", # branch fix/pak-no-copy-ensure-in-projlint no longer exists
-             "PredictiveEcology/SpaDES.project@development"),
+  pak::pak(paste0(c("PredictiveEcology/Require@", "PredictiveEcology/SpaDES.project@"),
+                  if (latest) "development" else c(shaRequire, shaSpaDESProject)),
            ask = FALSE)
 }
-# SpaDES packages requested for the simulation (latest development versions, unless pinned)
+# SpaDES packages requested for the simulation (pinned commits, or latest development versions)
 spadesPkgs <- if (pinned) c("SpaDES.core", "reproducible", "Require") else
-  c("PredictiveEcology/SpaDES.core@development",
-    "PredictiveEcology/reproducible@development",
-    "PredictiveEcology/Require@development (>= 1.0.1)")
+  if (latest) c("PredictiveEcology/SpaDES.core@development",
+                "PredictiveEcology/reproducible@development",
+                "PredictiveEcology/Require@development (>= 1.0.1)") else
+  paste0(c("PredictiveEcology/SpaDES.core@", "PredictiveEcology/reproducible@",
+           "PredictiveEcology/Require@"), c(shaSpaDESCore, shaReproducible, shaRequire))
 
 ################### SETUP
 
