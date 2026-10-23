@@ -46,6 +46,8 @@ if (SpaDES.project::user("tmichele")) terra::terraOptions(tempdir = scratchPath)
 # Use the files of this repository when they are present (a git clone with submodules, or the Docker image):
 # this pins the modules to the tested versions and needs no GitHub access or credentials. If they are not
 # present (e.g., a ZIP download without the submodules), the files are fetched from GitHub instead.
+# the project is the folder this script is run from, whatever it is called (e.g., a clone or a ZIP download)
+projectDir <- normalizePath(getwd(), winslash = "/")
 ghRaw <- "https://raw.githubusercontent.com/tati-micheletti/anthropogenicDisturbance_Demo/refs/heads/main/"
 repoFile <- function(path) if (file.exists(path)) path else paste0(ghRaw, path)
 moduleNames <- c("anthroDisturbance_DataPrep", "potentialResourcesNT_DataPrep", "anthroDisturbance_Generator")
@@ -71,7 +73,7 @@ for (i in seq_len(nReplicates)){
   
   out <- SpaDES.project::setupProject(
     runName = runName,
-    paths = list(projectPath = "anthropogenicDisturbance_Demo",
+    paths = list(projectPath = projectDir,
                  scratchPath = scratchPath,
                  outputPath = file.path("outputs", runName)),
     modules = modulesToUse,
@@ -136,7 +138,7 @@ for (i in seq_len(nReplicates)){
   
   out_b <- SpaDES.project::setupProject(
     runName = runName,
-    paths = list(projectPath = "anthropogenicDisturbance_Demo",
+    paths = list(projectPath = projectDir,
                  scratchPath = scratchPath,
                  outputPath = file.path("outputs", runName)),
     modules = modulesToUse,
