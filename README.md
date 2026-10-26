@@ -82,6 +82,12 @@ providers (details in the Supporting information of the software note, Appendix 
 The full list of layers, with the file used from each source, is in
 `modules/anthroDisturbance_DataPrep/data/disturbanceDT.csv`.
 
+A detailed description of every dataset considered for the simulator (objective, original and final format, original
+source, how it was obtained or processed, and problems found when trying to access it) is in
+[`data/dataProvenance.csv`](data/dataProvenance.csv). It is a copy of the authors' working table: it also lists
+datasets that the example does not use, and the personal file-sharing links of the working table were removed
+(the data used by the example are archived on Zenodo, see above).
+
 ## Notes
 
 * No fire module is used. Without a fire layer the module only skips the
