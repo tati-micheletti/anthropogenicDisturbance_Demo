@@ -58,6 +58,30 @@ docker run --rm -e ADS_END_YEAR=2031 -e ADS_N_REPLICATES=2 -v "$PWD/outputs:/ant
 In Windows PowerShell write the volume as `-v "${PWD}\outputs:/anthropogenicDisturbance_Demo/outputs"`.
 Without the two `-e` settings the container runs the full example of the note.
 
+## Input data and where it comes from
+
+The example downloads all inputs automatically. The last column is the archived copy that the example uses; the
+original provider is given for anyone who wants to obtain or update the data directly. Licences are those of the
+providers (details in the Supporting information of the software note, Appendix A, Table 1).
+
+| Layer(s) | Original provider | Licence | Copy used by the example |
+|---|---|---|---|
+| Anthropogenic disturbance footprint of boreal caribou ranges, 2008-2010 (rates of the older period) | Environment and Climate Change Canada (ECCC) | Open Government Licence - Canada | [Zenodo 23659898](https://zenodo.org/records/23659898); original: [open.canada.ca](https://open.canada.ca/data/en/dataset/afd0ce47-17c3-445c-b823-2f86409da2e0) |
+| Canadian Wind Turbine Database | Natural Resources Canada | Open Government Licence - Canada | [Zenodo 23659898](https://zenodo.org/records/23659898); original: [open.canada.ca](https://open.canada.ca/data/en/dataset/79fdad93-9025-49ad-ba16-c26d718cc070) |
+| ECCC 2015 anthropogenic disturbance footprint corrected for NT1 (rates of the newer period) | ECCC data, corrected for NT1 | see Supporting information | [Zenodo 20765500](https://zenodo.org/records/20765500) |
+| ECCC 2015 disturbance footprint clipped to the study area (`linearDisturbances_NT1_BCR6_clipped`, `polygonalDisturbances_NT1_BCR6_clipped`) | ECCC | Open Government Licence - Canada | Zenodo [20276162](https://zenodo.org/records/20276162), [20276369](https://zenodo.org/records/20276369) |
+| GNWT 15 m disturbance layers (`NorthwestTerritories_15m_Disturb_Perturb_Line` and `_Poly`) | Government of the Northwest Territories | see Supporting information | Zenodo [20276072](https://zenodo.org/records/20276072), [20276320](https://zenodo.org/records/20276320) |
+| National Road Network, NT (version 13) | Statistics Canada | Open Government Licence - Canada | [Zenodo 20276423](https://zenodo.org/records/20276423); original: [open.canada.ca](https://open.canada.ca/data/en/dataset/3d282116-e556-400c-9306-ca1a3cada77f) |
+| Wind potential (`windLayers_NWT`) | GNWT Centre for Geomatics (NWT Wind Energy Source) | Open Government Licence - Northwest Territories | [Zenodo 20275948](https://zenodo.org/records/20275948) |
+| Hydrocarbon potential (`C2H4_BCR6_NT1`), digitized from the GNWT hydrocarbon potential map | GNWT Industry, Tourism and Investment | see Supporting information | [Zenodo 20276273](https://zenodo.org/records/20276273) |
+| Oil and gas rights | GNWT Industry, Tourism and Investment | Open Government Licence - Northwest Territories | downloaded from the GNWT server (URL in `disturbanceDT.csv`) |
+| Mineral tenure (claims, leases, prospecting permits) | GNWT Centre for Geomatics | Open Government Licence - Northwest Territories | downloaded from the GNWT server (URL in `disturbanceDT.csv`) |
+| Forest cover (`NT_FORCOV`) and cutblock history (`CutblocksHistory_UpdatedJan2022`) | GNWT Environment and Climate Change | see Supporting information | Zenodo [20390000](https://zenodo.org/records/20390000), [20390196](https://zenodo.org/records/20390196) |
+| Study area (NT1 + BCR6) and raster to match (`RTM_BCR6_NT1.tif`) | derived from the caribou NT1 range and the Bird Conservation Regions | see Supporting information | Zenodo [20434361](https://zenodo.org/records/20434361), [20434240](https://zenodo.org/records/20434240) |
+
+The full list of layers, with the file used from each source, is in
+`modules/anthroDisturbance_DataPrep/data/disturbanceDT.csv`.
+
 ## Notes
 
 * No fire module is used. Without a fire layer the module only skips the
