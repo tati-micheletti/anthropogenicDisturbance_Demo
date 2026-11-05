@@ -5,7 +5,7 @@ name: Docker quick test
 on:
   workflow_dispatch:
   push:
-    paths: [Dockerfile, .dockerignore, runMe.R, .github/workflows/docker-quick-test.yml]
+    paths: [Dockerfile, .dockerignore, runMe.R, runToyExample.R, .github/workflows/docker-quick-test.yml]
 
 jobs:
   quick-test:
@@ -47,10 +47,26 @@ jobs:
           ls outputs | head -30
           test -f outputs/Figure2.png
           ls -d outputs/NT_0.2_run0*_North outputs/NT_0.2_run0*_South
+      - name: Run the toy example (three modules, invented data)
+        run: |
+          set +e
+          docker run --rm -v "$PWD/outputs:/anthropogenicDisturbance_Demo/outputs" anthrodist-demo Rscript runToyExample.R 2>&1 | tee toy.log
+          rc=${PIPESTATUS[0]}
+          grep -E "^Error|Error in|Execution halted|there is no package|cannot open" toy.log | head -8 | while IFS= read -r l; do echo "::error::${l:0:300}"; done
+          echo "::notice::toy example exit code $rc"
+          exit $rc
+      - name: Check the toy results
+        run: |
+          test -f outputs/toy/ToyFigure.png
+          test -f outputs/toy/toySummary.csv
+          cat outputs/toy/toySummary.csv
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: quick-test-outputs
           path: |
             outputs/Figure2.png
+            outputs/toy/ToyFigure.png
+            outputs/toy/toySummary.csv
             container.log
+            toy.log

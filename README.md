@@ -45,6 +45,25 @@ the same simulated lines.
 The simulated disturbance is only generated every `disturbanceInterval`
 (10) years: with `ADS_END_YEAR` below 2021 only the initial state is produced.
 
+## Toy example: all disturbance types on invented data
+
+The example above simulates one disturbance type (seismic lines) on real data. `runToyExample.R` complements it: it runs the whole
+workflow, i.e. the three modules in sequence (`anthroDisturbance_DataPrep`, `potentialResourcesNT_DataPrep`,
+`anthroDisturbance_Generator`), on a small, entirely invented landscape (20 x 20 km, nothing in it is real data). The script first
+writes invented raw input files (GeoPackage vector files and a GeoTIFF raster, in `outputs/toy/rawInputs`) and lists them
+in a table (`disturbanceDT`); the modules then load them, build the potential surfaces and simulate all three processes of the typology:
+
+* **Enlarging**: settlements grow;
+* **Generating**: new cutblocks (forestry), mines, oil and gas well sites, seismic lines and wind turbines;
+* **Connecting**: new cutblocks and mines are linked to roads, wells to the pipeline, wind turbines to the power line.
+
+It runs one seeded replicate (2011-2031), needs no data downloads and takes about five minutes once the packages are installed (the
+script installs them in the same way as `runMe.R`, which can take a while the first time; in the Docker image they are already there).
+Run it from the folder of this repository with `source("runToyExample.R")`; in Docker, run
+`docker run --rm -v "$PWD/outputs:/anthropogenicDisturbance_Demo/outputs" anthrodist-demo Rscript runToyExample.R`.
+It writes the figure `outputs/toy/ToyFigure.png` and the table `outputs/toy/toySummary.csv` (the area or length of every layer in 2011 and 2031).
+The rates and sizes in the script are arbitrary values chosen to make the result easy to see; they are not estimates for any region.
+
 ## Running in a container
 
 Install Docker (on Windows: Docker Desktop with the WSL 2 backend; use Linux containers, not Windows
