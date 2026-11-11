@@ -149,7 +149,7 @@ disturbanceParameters <- rbindlist(list(
   dpRow("mining", "potentialMining", "Generating", "mining", rate = 0.01),
   dpRow("oilGas", "potentialOilGas", "Generating", "oilGas", rate = 0.005,
         size = "max(stats::rnorm(1, mean = 10000, sd = 2000), 1)"),
-  dpRow("oilGas", "potentialSeismicLines", "Generating", "seismicLines", rate = 0.5, # counted on the 500 m buffered footprint of the lines
+  dpRow("oilGas", "potentialSeismicLines", "Generating", "seismicLines", rate = 0.25, # counted on the 500 m buffered footprint of the lines
         size = "rtnorm(1, 30000, 9000, lower = 0)"),
   dpRow("Energy", "potentialWindTurbines", "Generating", "windTurbines", rate = 0.015, size = "62500"),
   # Connecting (new features are linked to the closest existing line)
