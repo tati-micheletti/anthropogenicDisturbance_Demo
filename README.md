@@ -57,11 +57,11 @@ in a table (`disturbanceDT`); the modules then load them, build the potential su
 * **Generating**: new cutblocks (forestry), mines, oil and gas well sites, seismic lines and wind turbines;
 * **Connecting**: new cutblocks and mines are linked to roads, wells to the pipeline, wind turbines to the power line.
 
-It runs one seeded replicate (2011-2031), needs no data downloads and takes about five minutes once the packages are installed (the
+It runs one seeded replicate (2011-2051), needs no data downloads and takes about five minutes once the packages are installed (the
 script installs them in the same way as `runMe.R`, which can take a while the first time; in the Docker image they are already there).
 Run it from the folder of this repository with `source("runToyExample.R")`; in Docker, run
 `docker run --rm -v "$PWD/outputs:/anthropogenicDisturbance_Demo/outputs" anthrodist-demo Rscript runToyExample.R`.
-It writes the figure `outputs/toy/ToyFigure.png` and the table `outputs/toy/toySummary.csv` (the area or length of every layer in 2011 and 2031).
+It writes the figure `outputs/toy/ToyFigure.png` and the table `outputs/toy/toySummary.csv` (the area or length of every layer in 2011 and 2051).
 The rates and sizes in the script are arbitrary values chosen to make the result easy to see; they are not estimates for any region.
 
 ## Running in a container

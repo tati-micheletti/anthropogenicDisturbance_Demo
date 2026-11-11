@@ -13,7 +13,7 @@
 source("R/installPackages.R")
 spadesPkgs <- installPackages()
 source("R/toyExample.R")
-startYear <- 2011; endYear <- 2031; interval <- 5 # years; the disturbance events happen every 'interval' years
+startYear <- 2011; endYear <- 2051; interval <- 5 # years; the disturbance events happen every 'interval' years
 outDir <- file.path(getwd(), "outputs", "toy")
 moduleNames <- c("anthroDisturbance_DataPrep", "potentialResourcesNT_DataPrep", "anthroDisturbance_Generator")
 
